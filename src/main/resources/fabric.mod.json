@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "wideplots",
+  "version": "${version}",
+  "name": "wideplots",
+  "description": "Scalable plotworld mod.",
+  "authors": [],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/wideplots/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-datagen": [
+      "games.fatboychummy.wideplots.client.WidePlotsDataGenerator"
+    ],
+    "client": [
+      "games.fatboychummy.wideplots.client.WidePlotsClient"
+    ],
+    "main": [
+      "games.fatboychummy.wideplots.WidePlots"
+    ]
+  },
+  "mixins": [
+    "wideplots.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric-api": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}

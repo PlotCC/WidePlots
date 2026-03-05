@@ -1,0 +1,10 @@
+{
+  "type": "wideplots:plotdim",
+  "generator": {
+    "type": "wideplots:plot_generator",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "wideplots:plot_plains"
+    }
+  }
+}
