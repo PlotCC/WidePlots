@@ -157,10 +157,10 @@ public class RoadStructureManager {
     /**
      * Seeds the structure random based on the chunk given, and the direction of placement.
      * Seeds like so:
-     * seed = (chunkX * 341873128712L + chunkZ * 132897987541L) XOR (facingX ? 0 : 1)
+     * seed = (chunkX * 341873128712L + chunkZ * 132897987541L) + (facingX ? 0 : 123456789L)
      */
     public void randomSeed(int chunkX, int chunkZ, boolean facingX) {
-        random.setSeed((chunkX * 341873128712L + chunkZ * 132897987541L) ^ (facingX ? 0 : 1));
+        random.setSeed((chunkX * 341873128712L + chunkZ * 132897987541L) ^ (facingX ? 0 : 0x5DEECE66DL));
     }
 
     /**
