@@ -12,6 +12,7 @@ public class RoadStructure {
     private final int width;
     private final int length;
     private final double genChance; // Probability of selecting this structure when applicable
+    private final int depth; // How deep the structure should be placed.
 
     public RoadStructure(ResourceLocation structureId, CompoundTag roadData) {
         this.structureId = structureId;
@@ -19,6 +20,7 @@ public class RoadStructure {
         this.width = roadData.getInt("width");
         this.length = roadData.getInt("length");
         this.genChance = roadData.getDouble("genChance");
+        this.depth = roadData.getInt("depth");
     }
 
     public ResourceLocation getStructureId() {
@@ -35,6 +37,10 @@ public class RoadStructure {
 
     public int getLength() {
         return length;
+    }
+
+    public int getDepth() {
+        return depth;
     }
 
     public double getGenChance() {

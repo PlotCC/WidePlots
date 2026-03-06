@@ -26,6 +26,7 @@ import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.blending.Blender;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
@@ -34,6 +35,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+
+record Square(int minX, int minZ, int maxX, int maxZ) {}
 
 /**
  * Custom chunk generator that generates a world of plots separated by roads.
@@ -52,7 +55,7 @@ public class PlotChunkGenerator extends ChunkGenerator {
     private static final int PLOT_SIZE = 48; // Size of each plot in blocks
     private static final int ROAD_WIDTH = 8; // Width of roads between plots
     private static final int GROUND_LEVEL = 64; // Y level of the plot floor
-    private static final String ROAD_TYPE = "debug"; // Default road type for structure selection
+    private static final String ROAD_TYPE = "basic"; // Default road type for structure selection
 
     private final BlockState[] baseColumn = new BlockState[384];
     private boolean baseColumnInitialized = false;
@@ -84,75 +87,227 @@ public class PlotChunkGenerator extends ChunkGenerator {
 
     @Override
     public void buildSurface(WorldGenRegion level, StructureManager structureManager, RandomState random, ChunkAccess chunk) {
-        final int cell = PLOT_SIZE + ROAD_WIDTH;
+        // We can divide the world into three road grids.
+        //   1. 4-way grid. Where the roads all intersect.
+        //   2. X-axis grid. Where roads run along the X axis.
+        //   3. Z-axis grid. Where roads run along the Z axis.
+        // Each grid is based on the same origin points, with the 4-way grid being at 0,0, then the X and Z grids being offset by ROAD_WIDTH in their respective directions.
+        // (Possibly also some additional offset depending on how rotations will need be set up).
+        // We always generate the roads in the positive X and Z directions from their origin points, so we can check
+        // if a chunk is part of a road by checking if it's horizontal (backwards) to any of the grids.
+        // Then, we position the road based on the closest grid point (again, backwards from the current position).
 
-        final int chunkMinX = chunk.getPos().getMinBlockX();
-        final int chunkMinZ = chunk.getPos().getMinBlockZ();
-        final int chunkMaxX = chunk.getPos().getMaxBlockX();
-        final int chunkMaxZ = chunk.getPos().getMaxBlockZ();
+        // First, find the closest grid origins for each of the three grids. We can do this by finding the first grid
+        // origin that is at or after the minimum X and Z coordinates of the chunk. Then, subtracting one cell size to
+        // get the closest grid origin that is before the chunk.
 
-        // Find first grid origin that could be inside this chunk.
-        int startOriginX = firstGridAtOrAfter(chunkMinX, cell);
-        int startOriginZ = firstGridAtOrAfter(chunkMinZ, cell);
+        Square chunkSquare = new Square(
+                chunk.getPos().getMinBlockX(),
+                chunk.getPos().getMinBlockZ(),
+                chunk.getPos().getMaxBlockX(),
+                chunk.getPos().getMaxBlockZ()
+        );
+        BlockPos intersectionPos = getGridPositionInChunk(chunkSquare);
 
-        // Rule out chunks that are parts of a player's plot.
-        // We can do this by checking if the chunk is horizontal to any grid origins.
-        // If they chunk is horizontal to any grid origins, then it's not part of a plot.
-        // If there is no horizontal connections to a grid origin, then this is a plot chunk.
-        boolean isHorizontalToOriginX = startOriginX >= chunkMinX && startOriginX <= chunkMaxX;
-        boolean isHorizontalToOriginZ = chunkMinZ < startOriginZ && chunkMaxZ > startOriginZ;
-        BlockPos debugPos = new BlockPos(chunkMinX + 8, GROUND_LEVEL + 10, chunkMinZ + 8);
-        if (!isHorizontalToOriginX && !isHorizontalToOriginZ) {
-            // Debug: Place a red wool block in the center of the chunk at ground_level+10
-            chunk.setBlockState(debugPos, Blocks.RED_WOOL.defaultBlockState(), false);
-            return; // This chunk is not part of a road, so skip structure placement.
+        // Check: Is this chunk part of a road at all?
+        // Check if there is a grid origin to the negative X and Z.
+        int cell = PLOT_SIZE + ROAD_WIDTH;
+
+        // A grid origin can be within this chunk AND a road leading to it.
+        // Thus, we need to compute both the min and max.
+        int nearestGridXMin = Math.floorDiv(chunkSquare.minX(), cell) * cell;
+        int nearestGridZMin = Math.floorDiv(chunkSquare.minZ(), cell) * cell;
+        int nearestGridXMax = Math.floorDiv(chunkSquare.maxX(), cell) * cell;
+        int nearestGridZMax = Math.floorDiv(chunkSquare.maxZ(), cell) * cell;
+
+        boolean hasGridXMin =
+                nearestGridXMin <= chunkSquare.maxX() &&
+                nearestGridXMin >= chunkSquare.minX() - (cell + 15);
+        boolean hasGridZMin =
+                nearestGridZMin <= chunkSquare.maxZ() &&
+                nearestGridZMin >= chunkSquare.minZ() - (cell + 15);
+        boolean hasGridXMax =
+                nearestGridXMax <= chunkSquare.maxX() &&
+                nearestGridXMax >= chunkSquare.minX() - (cell + 15);
+        boolean hasGridZMax =
+                nearestGridZMax <= chunkSquare.maxZ() &&
+                nearestGridZMax >= chunkSquare.minZ() - (cell + 15);
+
+        if (!hasGridXMax && !hasGridZMax && !hasGridXMin && !hasGridZMin) {
+            // No grid origins nearby, so this chunk is purely plot and we can skip road generation.
+            return;
         }
-        // Debug: Place a green wool block in the center of the chunk at ground_level+10 if it's horizontal to an origin
-        chunk.setBlockState(debugPos, Blocks.GREEN_WOOL.defaultBlockState(), false);
 
-        for (int originX = startOriginX; originX <= chunkMaxX; originX += cell) {
-            for (int originZ = startOriginZ; originZ <= chunkMaxZ; originZ += cell) {
-                // Place the two roads that intersect at this grid origin.
-                if (isHorizontalToOriginX)
-                    placeRoadSetAtOrigin(level, originX, originZ, true);
-                if (isHorizontalToOriginZ)
-                    placeRoadSetAtOrigin(level, originX, originZ, false);
+        if (hasGridXMin) {
+            placeRoadSetAtOrigin(
+                    level,
+                    chunkSquare,
+                    nearestGridXMin,
+                    nearestGridZMin,
+                    true
+            );
+        }
 
-                if (isHorizontalToOriginX && isHorizontalToOriginZ) {
-                    // Place a four-way intersection at the grid origin if it's within this chunk
-                    placeFourWay(level, originX, originZ);
-                }
-            }
+        if (hasGridZMin) {
+            placeRoadSetAtOrigin(
+                    level,
+                    chunkSquare,
+                    nearestGridXMin,
+                    nearestGridZMin,
+                    false
+            );
+        }
+
+        if (hasGridXMax) {
+            placeRoadSetAtOrigin(
+                    level,
+                    chunkSquare,
+                    nearestGridXMax,
+                    nearestGridZMax,
+                    true
+            );
+        }
+
+        if (hasGridZMax) {
+            placeRoadSetAtOrigin(
+                    level,
+                    chunkSquare,
+                    nearestGridXMax,
+                    nearestGridZMax,
+                    false
+            );
+        }
+
+        if (intersectionPos == null) {
+            return; // No direct intersection to handle.
+        }
+
+        // Place an intersection at the grid origin if it's within this chunk
+        // TODO: What happens if the intersection is part-way into this chunk?
+        placeFourWay(level, chunkSquare, intersectionPos.getX(), intersectionPos.getZ());
+
+        // Place roads beside, if the road placements would still be within this chunk.
+        BlockPos straightXPos = new BlockPos(intersectionPos.getX() + ROAD_WIDTH, GROUND_LEVEL, intersectionPos.getZ());
+        if (straightXPos.getX() <= chunk.getPos().getMaxBlockX() && straightXPos.getX() >= chunk.getPos().getMinBlockX()) {
+            placeRoadSetAtOrigin(
+                    level,
+                    chunkSquare,
+                    intersectionPos.getX(),
+                    intersectionPos.getZ(),
+                    true
+            );
+        }
+
+        BlockPos straightZPos = new BlockPos(intersectionPos.getX(), GROUND_LEVEL, intersectionPos.getZ() + ROAD_WIDTH);
+        if (straightZPos.getZ() <= chunk.getPos().getMaxBlockZ() && straightZPos.getZ() >= chunk.getPos().getMinBlockZ()) {
+            placeRoadSetAtOrigin(
+                    level,
+                    chunkSquare,
+                    intersectionPos.getX(),
+                    intersectionPos.getZ(),
+                    false
+            );
+        }
+
+        // There was an intersection in this chunk, which means our `max` check will only detect this
+        // intersection, but a road *might* be leading into this chunk too, so we need to check from
+        // (intersectionX - 1, maxZ and (maxX, intersectionZ - 1).
+        BlockPos roadXPos = new BlockPos(
+                intersectionPos.getX() - 1,
+                GROUND_LEVEL,
+                intersectionPos.getZ()
+        );
+        BlockPos roadZPos = new BlockPos(
+                intersectionPos.getX(),
+                GROUND_LEVEL,
+                intersectionPos.getZ() - 1
+        );
+
+        int nearestGridX = Math.floorDiv(roadXPos.getX(), cell) * cell;
+        int nearestGridZ = Math.floorDiv(roadZPos.getZ(), cell) * cell;
+
+        boolean hasRoadX =
+                nearestGridX <= chunkSquare.maxX() &&
+                nearestGridX >= chunkSquare.minX() - (cell + 15);
+        boolean hasRoadZ =
+                nearestGridZ <= chunkSquare.maxZ() &&
+                nearestGridZ >= chunkSquare.minZ() - (cell + 15);
+
+        if (hasRoadX) {
+            placeRoadSetAtOrigin(
+                    level,
+                    chunkSquare,
+                    nearestGridX,
+                    intersectionPos.getZ(),
+                    true
+            );
+        }
+
+        if (hasRoadZ) {
+            placeRoadSetAtOrigin(
+                    level,
+                    chunkSquare,
+                    intersectionPos.getX(),
+                    nearestGridZ,
+                    false
+            );
         }
     }
 
     /**
-     * Find the first grid origin at or after the given value.
-     * @param value The value to find the grid origin for (e.g., chunkMinX or chunkMinZ)
-     * @param cell The size of each cell (plot + road width)
-     * @return The first grid origin at or after the given value.
+     * Gets the grid position that is inside the given chunk, if any.
+     * @param chunkSquare the square area of the chunk for bounding.
+     * @return the BlockPos of the grid position inside the chunk, or null if there is no grid position inside the chunk
      */
-    private int firstGridAtOrAfter(int value, int cell) {
-        int base = Math.floorDiv(value, cell) * cell;
-        return (base < value) ? base + cell : base;
+    private BlockPos getGridPositionInChunk(Square chunkSquare) {
+        final int cell = PLOT_SIZE + ROAD_WIDTH;
+
+        final int chunkMinX = chunkSquare.minX();
+        final int chunkMinZ = chunkSquare.minZ();
+        final int chunkMaxX = chunkSquare.maxX();
+        final int chunkMaxZ = chunkSquare.maxZ();
+
+        // Find first grid origin that could be inside this chunk.
+        int minXi = -Math.floorDiv(-chunkMinX, cell); // Equivalent to ceil(chunkMinX / cell)
+        int minZi = -Math.floorDiv(-chunkMinZ, cell); // Equivalent to ceil(chunkMinZ / cell)
+        int maxXi = Math.floorDiv(chunkMaxX, cell); // Equivalent to floor(chunkMaxX / cell)
+        int maxZi = Math.floorDiv(chunkMaxZ, cell); // Equivalent to floor(chunkMaxZ / cell)
+
+        if (minXi > maxXi || minZi > maxZi) {
+            // No grid origin inside this chunk
+            return null;
+        }
+
+        // There is at least one grid origin inside this chunk. We can just return the first one.
+        // Hopefully people aren't making plots smaller than a chunk with roads also small enough to fit two origins...
+        int gridX = minXi * cell;
+        int gridZ = minZi * cell;
+        return new BlockPos(gridX, GROUND_LEVEL, gridZ);
     }
 
     /**
      * Place a four-way intersection structure at the given grid origin.
      * @param level level from buildSurface
+     * @param chunkSquare the square area of the chunk for bounding.
      * @param originX X coordinate of the grid origin (intersection point)
      * @param originZ Z coordinate of the grid origin (intersection point)
      */
-    private void placeFourWay(WorldGenRegion level, int originX, int originZ) {
+    private void placeFourWay(WorldGenRegion level, Square chunkSquare, int originX, int originZ) {
+        PlotStructures.ROAD_STRUCTURE_MANAGER.randomSeed(originX, originZ, true); // facingX doesn't matter here, other than it staying constant.
         RoadStructure intersection = PlotStructures.ROAD_STRUCTURE_MANAGER.selectStructure("four_way", ROAD_TYPE);
         if (intersection == null) {
             WidePlots.LOGGER.warn("No four-way intersection structure available for placement at {},{}", originX, originZ);
             return;
         }
 
-        BlockPos intersectionPos = new BlockPos(originX, GROUND_LEVEL, originZ);
+        BlockPos intersectionPos = new BlockPos(
+                originX,
+                GROUND_LEVEL - intersection.getDepth(),
+                originZ
+        );
         placeRoadStructure(
                 level,
+                chunkSquare,
                 normalizeTemplateId(intersection.getStructureId()),
                 intersectionPos,
                 Rotation.NONE
@@ -162,95 +317,47 @@ public class PlotChunkGenerator extends ChunkGenerator {
     /**
      * Place a straight road structure along either the X or Z axis at the given grid origin.
      * @param level level from buildSurface
+     * @param chunkSquare the square area of the chunk for bounding.
      * @param originX X coordinate of the grid origin (intersection point)
      * @param originZ Z coordinate of the grid origin (intersection point)
      * @param horizontalToOriginX true if the road should be placed along the X axis, false for Z axis
      */
-    private void placeRoadSetAtOrigin(WorldGenRegion level, int originX, int originZ, boolean horizontalToOriginX) {
-        RoadStructure intersection = PlotStructures.ROAD_STRUCTURE_MANAGER.selectStructure("four_way", ROAD_TYPE);
+    private void placeRoadSetAtOrigin(WorldGenRegion level, Square chunkSquare, int originX, int originZ, boolean horizontalToOriginX) {
+        PlotStructures.ROAD_STRUCTURE_MANAGER.randomSeed(originX, originZ, horizontalToOriginX);
         RoadStructure straight = PlotStructures.ROAD_STRUCTURE_MANAGER.selectStructure("straight", ROAD_TYPE);
 
-        if (intersection == null || straight == null) {
+        if (straight == null) {
             WidePlots.LOGGER.warn("No road structures available for placement at {},{}", originX, originZ);
             return;
         }
 
         if (horizontalToOriginX) {
             // 1: Straight road along +X axis
-            BlockPos straightXPos = new BlockPos(originX + ROAD_WIDTH, GROUND_LEVEL, originZ);
+            BlockPos straightXPos = new BlockPos(
+                    originX + ROAD_WIDTH, // Due to intersection positioning.
+                    GROUND_LEVEL - straight.getDepth(),
+                    originZ
+            );
             placeRoadStructure(
                     level,
+                    chunkSquare,
                     normalizeTemplateId(straight.getStructureId()),
                     straightXPos,
                     Rotation.NONE
             );
         } else {
             // 2: Straight road along +Z axis
-            BlockPos straightZPos = new BlockPos(originX, GROUND_LEVEL, originZ + ROAD_WIDTH);
+            BlockPos straightZPos = new BlockPos(
+                    originX + ROAD_WIDTH - 1, // Due to rotation
+                    GROUND_LEVEL - straight.getDepth(),
+                    originZ + ROAD_WIDTH // Due to intersection positioning.
+            );
             placeRoadStructure(
                     level,
+                    chunkSquare,
                     normalizeTemplateId(straight.getStructureId()),
                     straightZPos,
                     Rotation.CLOCKWISE_90
-            );
-        }
-    }
-
-
-    /**
-     * Check if the given world coordinates are part of a road segment and place the appropriate road structure if so.
-     * NOTE: Did not work as intended, left for future me reference.
-     * @param level level from buildSurface
-     * @param structureManager structure manager from buildSurface
-     * @param worldX X coordinate of the block to check
-     * @param worldZ Z coordinate of the block to check
-     */
-    public void checkAndPlaceRoadStructure(WorldGenRegion level, StructureManager structureManager, int worldX, int worldZ) {
-        int plotX = Math.floorMod(worldX, PLOT_SIZE + ROAD_WIDTH);
-        int plotZ = Math.floorMod(worldZ, PLOT_SIZE + ROAD_WIDTH);
-        int chunkX = worldX >> 4;
-        int chunkZ = worldZ >> 4;
-
-        boolean isRoadX = plotX < ROAD_WIDTH;
-        boolean isRoadZ = plotZ < ROAD_WIDTH;
-
-        if (!isRoadX && !isRoadZ) {
-            return; // Not a road column
-        }
-
-        if (isRoadX && chunkZ == 0) {
-            // Place straight road along X axis
-            RoadStructure straightX = PlotStructures.ROAD_STRUCTURE_MANAGER.selectStructure("straight", ROAD_TYPE);
-            BlockPos straightXPos = new BlockPos(worldX, GROUND_LEVEL, worldZ);
-            placeRoadStructure(
-                    level,
-                    normalizeTemplateId(straightX.getStructureId()),
-                    straightXPos,
-                    Rotation.NONE
-            );
-        }
-
-        if (isRoadZ && chunkX == 0) {
-            // Place straight road along Z axis
-            RoadStructure straightZ = PlotStructures.ROAD_STRUCTURE_MANAGER.selectStructure("straight", ROAD_TYPE);
-            BlockPos straightZPos = new BlockPos(worldX, GROUND_LEVEL, worldZ);
-            placeRoadStructure(
-                    level,
-                    normalizeTemplateId(straightZ.getStructureId()),
-                    straightZPos,
-                    Rotation.CLOCKWISE_90
-            );
-        }
-
-        if (plotX == 0 && plotZ == 0) {
-            // Place four-way intersection at the origin of the road segments
-            RoadStructure intersection = PlotStructures.ROAD_STRUCTURE_MANAGER.selectStructure("four_way", ROAD_TYPE);
-            BlockPos intersectionPos = new BlockPos(worldX, GROUND_LEVEL, worldZ);
-            placeRoadStructure(
-                    level,
-                    normalizeTemplateId(intersection.getStructureId()),
-                    intersectionPos,
-                    Rotation.NONE
             );
         }
     }
@@ -258,16 +365,19 @@ public class PlotChunkGenerator extends ChunkGenerator {
     /**
      * Place a road structure in the world at the given position with the specified rotation.
      * @param level level from buildSurface
+     * @param chunkSquare the square area of the chunk for bounding.
      * @param normalizedId normalized resource location of the structure template to place
      * @param pos world position to place the structure at (should be the bottom north-west corner of the structure)
      * @param rotation rotation to apply to the structure when placing
      */
-    public void placeRoadStructure(WorldGenRegion level, ResourceLocation normalizedId, BlockPos pos, Rotation rotation) {
+    private void placeRoadStructure(WorldGenRegion level, Square chunkSquare, ResourceLocation normalizedId, BlockPos pos, Rotation rotation) {
         StructureTemplateManager templateManager = level.getServer().getStructureManager();
         StructureTemplate template = templateManager.getOrCreate(normalizedId);
 
         StructurePlaceSettings settings = new StructurePlaceSettings()
-                .setRotation(rotation);
+                .setRotation(rotation)
+                .setBoundingBox(getChunkBoundingBox(chunkSquare));
+
 
         WidePlots.LOGGER.info("Placing road structure '{}' at {},{} with rotation {}", normalizedId, pos.getX(), pos.getZ(), settings.getRotation());
         boolean success = template.placeInWorld(
@@ -400,49 +510,19 @@ public class PlotChunkGenerator extends ChunkGenerator {
     }
 
     /**
-     * Determine the shape of the road segment at the given world coordinates, if any.
-     * Not used in current implementation.
-     * @param worldX X coordinate of the block to check
-     * @param worldZ Z coordinate of the block to check
-     * @return the shape of the road segment ("straight_x", "straight_z", "four_way") or null if not a road block
+     * Get a bounding box for the given chunk square.
+     * @param chunkSquare the square area of the chunk for bounding.
+     * @return a BoundingBox that covers the entire vertical space of the chunk and the horizontal area defined by the chunk square
      */
-    private String getRoadShape(int worldX, int worldZ) {
-        int plotX = Math.floorMod(worldX, PLOT_SIZE + ROAD_WIDTH);
-        int plotZ = Math.floorMod(worldZ, PLOT_SIZE + ROAD_WIDTH);
-
-        boolean isRoadX = plotX < ROAD_WIDTH;
-        boolean isRoadZ = plotZ < ROAD_WIDTH;
-
-        if (isRoadX && isRoadZ) {
-            return "four_way";
-        } else if (isRoadX) {
-            return "straight_x";
-        } else if (isRoadZ) {
-            return "straight_z";
-        }
-
-        return null;
-    }
-
-    /**
-     * Determine the appropriate rotation for a road structure based on the shape of the road segment at the given world coordinates.
-     * Not used in current implementation.
-     * @param worldX X coordinate of the block to check
-     * @param worldZ Z coordinate of the block to check
-     * @return the rotation to apply to the road structure when placing
-     */
-    private Rotation getRotationForRoad(int worldX, int worldZ) {
-        String shape = getRoadShape(worldX, worldZ);
-        if (shape == null) {
-            return Rotation.NONE;
-        }
-
-        return switch (shape) {
-            case "straight_x" -> Rotation.COUNTERCLOCKWISE_90;
-            case "straight_z" -> Rotation.NONE; // No rotation needed for straight roads along Z axis
-            case "four_way" -> Rotation.NONE; // No rotation needed for four-way junctions
-            default -> Rotation.NONE;
-        };
+    private static BoundingBox getChunkBoundingBox(Square chunkSquare) {
+        return new BoundingBox(
+                chunkSquare.minX(),
+                -64, // Min world height
+                chunkSquare.minZ(),
+                chunkSquare.maxX(),
+                384, // Max world height
+                chunkSquare.maxZ()
+        );
     }
 
     /**
