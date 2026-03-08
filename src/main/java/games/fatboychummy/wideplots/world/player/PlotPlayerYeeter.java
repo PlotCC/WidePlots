@@ -1,6 +1,7 @@
-package games.fatboychummy.wideplots.world;
+package games.fatboychummy.wideplots.world.player;
 
 import games.fatboychummy.wideplots.WidePlots;
+import games.fatboychummy.wideplots.world.PlotDimension;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -14,7 +15,7 @@ import java.util.UUID;
 /**
  * Handles player spawning and teleportation to the plot dimension.
  */
-public class PlotPlayerHandler {
+public class PlotPlayerYeeter {
 
     // Store players that need to be teleported with a delay counter (using UUID to avoid duplicates)
     private static final Map<UUID, Integer> PENDING_TELEPORTS = new HashMap<>();

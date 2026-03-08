@@ -52,8 +52,8 @@ public class PlotChunkGenerator extends ChunkGenerator {
 
     // Plot configuration - TODO: Make these configurable
     // Note on the todo: Make based on the structure sizes?
-    private static final int PLOT_SIZE = 48; // Size of each plot in blocks
-    private static final int ROAD_WIDTH = 8; // Width of roads between plots
+    public static final int PLOT_SIZE = 48; // Size of each plot in blocks
+    public static final int ROAD_WIDTH = 8; // Width of roads between plots
     private static final int GROUND_LEVEL = 64; // Y level of the plot floor
     private static final String ROAD_TYPE = "basic"; // Default road type for structure selection
 
@@ -379,7 +379,6 @@ public class PlotChunkGenerator extends ChunkGenerator {
                 .setBoundingBox(getChunkBoundingBox(chunkSquare));
 
 
-        WidePlots.LOGGER.info("Placing road structure '{}' at {},{} with rotation {}", normalizedId, pos.getX(), pos.getZ(), settings.getRotation());
         boolean success = template.placeInWorld(
                 level,
                 pos,
@@ -390,8 +389,6 @@ public class PlotChunkGenerator extends ChunkGenerator {
         );
         if (!success) {
             WidePlots.LOGGER.warn("Failed to place road structure '{}' at {},{}", normalizedId, pos.getX(), pos.getZ());
-        } else {
-            WidePlots.LOGGER.info("Successfully placed road structure '{}' at {},{}", normalizedId, pos.getX(), pos.getZ());
         }
 
     }

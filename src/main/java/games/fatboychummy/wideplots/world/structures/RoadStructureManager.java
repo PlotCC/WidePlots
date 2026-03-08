@@ -131,7 +131,6 @@ public class RoadStructureManager {
      * @return A randomly selected RoadStructure matching the given shape and type, or null if no candidates are available or all have zero weight.
      */
     public RoadStructure selectStructure(String shape, String type) {
-        WidePlots.LOGGER.info("Selecting structure for shape '{}' and type '{}'", shape, type); //temp
         return selectStructure(getStructures(shape, type));
     }
 
@@ -142,7 +141,6 @@ public class RoadStructureManager {
      * @return A list of RoadStructures matching the given shape and type, or an empty list if none are found.
      */
     public List<RoadStructure> getStructures(String shape, String type) {
-        WidePlots.LOGGER.info("Retrieving structures for shape '{}' and type '{}'", shape, type); //temp
         return switch (shape) {
             case "straight" -> straightRoads.getOrDefault(type, Collections.emptyList());
             case "four_way" -> fourWayJunctions.getOrDefault(type, Collections.emptyList());
