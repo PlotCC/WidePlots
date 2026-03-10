@@ -1,7 +1,11 @@
 package games.fatboychummy.wideplots.world.plot.permissions;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 
@@ -20,12 +24,6 @@ public class PlotPermissionSet {
 
     // Whether the UUID list is whitelist or blacklist. By default, we use a blacklist to include everyone.
     private boolean isPlayerBlacklist;
-
-    // The items that this permission set applies to. If empty, applies to all items.
-    private ArrayList<String> applicableItems;
-
-    // Whether the item list is a whitelist or blacklist. By default, we use a blacklist to include all items.
-    private boolean isItemBlacklist;
 
     // The blocks (or block tags) that this permission set applies to. If empty, applies to all blocks.
     private ArrayList<String> applicableBlocks;
@@ -46,26 +44,36 @@ public class PlotPermissionSet {
         this.isPlayerBlacklist = true; // Default to blacklist (include everyone)
         this.applicableBlocks = new ArrayList<String>();
         this.isBlockBlacklist = true; // Default to blacklist (include all blocks)
-        this.applicableItems = new ArrayList<String>();
-        this.isItemBlacklist = true; // Default to blacklist (include all items)
         this.isActive = true; // Permission sets are active by default
         this.boundingBox = null; // Applies to entire plot by default
     }
 
-    public void addUser(String playerUUID) {
+    public String getName() {
+        return name;
+    }
+
+    public void addPlayer(String playerUUID) {
         this.playerUUIDs.add(playerUUID);
     }
 
-    public boolean hasUser(String playerUUID) {
+    public boolean hasPlayer(String playerUUID) {
         return this.playerUUIDs.contains(playerUUID);
     }
 
-    public void removeUser(String playerUUID) {
+    public void removePlayer(String playerUUID) {
         this.playerUUIDs.remove(playerUUID);
+    }
+
+    public ArrayList<String> getPlayerUUIDs() {
+        return playerUUIDs;
     }
 
     public void setPlayerBlacklist(boolean isBlacklist) {
         this.isPlayerBlacklist = isBlacklist;
+    }
+
+    public boolean isPlayerBlacklist() {
+        return isPlayerBlacklist;
     }
 
     public void addApplicableBlock(String blockId) {
@@ -80,24 +88,16 @@ public class PlotPermissionSet {
         this.applicableBlocks.remove(blockId);
     }
 
+    public ArrayList<String> getApplicableBlocks() {
+        return applicableBlocks;
+    }
+
     public void setBlockBlacklist(boolean isBlacklist) {
         this.isBlockBlacklist = isBlacklist;
     }
 
-    public void addApplicableItem(String itemId) {
-        this.applicableItems.add(itemId);
-    }
-
-    public boolean hasApplicableItem(String itemId) {
-        return this.applicableItems.contains(itemId);
-    }
-
-    public void removeApplicableItem(String itemId) {
-        this.applicableItems.remove(itemId);
-    }
-
-    public void setItemBlacklist(boolean isBlacklist) {
-        this.isItemBlacklist = isBlacklist;
+    public boolean isBlockBlacklist() {
+        return isBlockBlacklist;
     }
 
     public void setActive(boolean isActive) {
@@ -112,6 +112,10 @@ public class PlotPermissionSet {
         this.boundingBox = boundingBox;
     }
 
+    public BoundingBox getBoundingBox() {
+        return boundingBox;
+    }
+
     /**
      * Sets the permission for a specific permission name.
      * @param permission The PlotActionType of the permission to set.
@@ -121,25 +125,49 @@ public class PlotPermissionSet {
         this.permissionList.setPermission(permission, value);
     }
 
+    public PlotPermissionList getPermissionList() {
+        return permissionList;
+    }
+
 
     /**
      * Whether this permission set allows the given action for the given player and block.
      * @param playerUUID The UUID of the player performing the action.
      * @param actionType The type of action being performed (e.g. BUILD, ACCESS, etc.)
-     * @param blockState The block state being interacted with (if applicable). Can be null if not applicable.
-     * @param itemUsed <todo> The item being used to perform the action (if applicable). Can be null if not applicable.
+     * @param blockState the BlockState of the block being changed or altered or whatever the heck
+     * @param blockPos The position the action is taking place at.
      * @return GRANT if the action is allowed, DENY if the action is denied, or UNCHANGED if this permission set does not apply to the player or action.
      */
-    public PlotPermission getActionResult(String playerUUID, PlotActionType actionType, BlockState blockState) {
+    public PlotPermission getActionResult(String playerUUID, PlotActionType actionType, @Nullable BlockState blockState, @Nullable BlockPos blockPos) {
+        if (!isActive()) {
+            return PlotPermission.UNCHANGED; // Permission set is disabled.
+        }
+
         if (!appliesToPlayer(playerUUID)) {
             return PlotPermission.UNCHANGED; // Permission set does not apply to this player.
         }
 
+        if (boundingBox != null && blockPos != null) {
+            if (!boundingBox.isInside(blockPos.getX(), blockPos.getY(), blockPos.getZ())) {
+                return PlotPermission.UNCHANGED;
+            } // Otherwise it applies to this position.
+        }
 
+        // If this has a bounding box, but no position is passed through, ignore the test.
+        if (boundingBox != null && blockPos == null) {
+            return PlotPermission.UNCHANGED;
+        }
 
+        if (blockState != null) {
+            ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(blockState.getBlock());
+            if (hasApplicableBlock(blockId.toString())) {
+                if (isBlockBlacklist) {
+                    return PlotPermission.UNCHANGED;
+                } // Otherwise it applies to this block.
+            }
+        }
 
-
-        return PlotPermission.UNCHANGED; // No specific permission set for this action.
+        return permissionList.getPermission(actionType);
     }
 
     /**

@@ -1,6 +1,7 @@
 package games.fatboychummy.wideplots.world;
 
 import games.fatboychummy.wideplots.WidePlots;
+import games.fatboychummy.wideplots.world.generation.PlotChunkGenerator;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
@@ -29,6 +30,8 @@ public class PlotDimension {
     public static DimensionType PLOTDIM_TYPE;
 
     public static ServerLevel PLOTDIM_LEVEL;
+
+    public static BlockPos PLOTDIM_SPAWN = new BlockPos(0, 65, 0);
 
     // Register chunk generator codec
     static {

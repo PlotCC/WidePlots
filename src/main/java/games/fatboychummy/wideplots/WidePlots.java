@@ -1,11 +1,13 @@
 package games.fatboychummy.wideplots;
 
 import com.mojang.logging.LogUtils;
+import games.fatboychummy.wideplots.command.PlotCommands;
 import games.fatboychummy.wideplots.debug.DebugCommands;
 import games.fatboychummy.wideplots.world.PlotDimension;
 import games.fatboychummy.wideplots.world.player.PlotPlayerYeeter;
 import games.fatboychummy.wideplots.world.plot.permissions.PlotPermissionHandler;
 import games.fatboychummy.wideplots.world.plot.permissions.PlotPermissions;
+import games.fatboychummy.wideplots.world.plot.storage.PlotStorageHandler;
 import games.fatboychummy.wideplots.world.structures.PlotStructures;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.resources.ResourceLocation;
@@ -28,13 +30,15 @@ public class WidePlots implements ModInitializer {
         PlotDimension.init();
         PlotPlayerYeeter.init();
 
-        // Load structures and some debug commands.
+        // Load structures and commands commands.
         PlotStructures.init();
-        DebugCommands.register();
+        DebugCommands.init();
+        PlotCommands.init();
 
-        // Permission initialization.
+        // Permission and plot storage initialization.
         PlotPermissions.init();
         PlotPermissionHandler.init();
+        PlotStorageHandler.init();
 
         LOGGER.info("WidePlots initialized successfully");
     }

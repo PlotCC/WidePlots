@@ -1,4 +1,4 @@
-package games.fatboychummy.wideplots.world;
+package games.fatboychummy.wideplots.world.generation;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -7,8 +7,10 @@ import games.fatboychummy.wideplots.WidePlots;
 import games.fatboychummy.wideplots.world.structures.PlotStructures;
 import games.fatboychummy.wideplots.world.structures.RoadStructure;
 import games.fatboychummy.wideplots.world.structures.RoadStructureManager;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelHeightAccessor;
@@ -22,6 +24,7 @@ import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.RandomState;
@@ -42,6 +45,34 @@ record Square(int minX, int minZ, int maxX, int maxZ) {}
  * Custom chunk generator that generates a world of plots separated by roads.
  */
 public class PlotChunkGenerator extends ChunkGenerator {
+    public static void init() {
+        // Register the regenerator tick method.
+        ServerTickEvents.START_SERVER_TICK.register(PlotChunkGenerator::tickRegenerator);
+    }
+
+    private static final int ticksPerRegen = 5;
+    private static int tickCounter = 0;
+    public static void tickRegenerator(MinecraftServer server) {
+        if (tickCounter < ticksPerRegen) {
+            tickCounter++;
+            return;
+        }
+        tickCounter = 0;
+
+        if (server.isRunning()) {
+            ChunkRegenData data = ChunkRegenQueue.next();
+            if (data != null) {
+                ChunkAccess chunk = server.overworld().getChunk(data.chunkX(), data.chunkZ(), ChunkStatus.FULL);
+
+                if (chunk != null) {
+                    regenerateChunk(chunk, data.minBlockX(), data.minBlockZ(), data.maxBlockX(), data.maxBlockZ());
+                } else {
+                    WidePlots.LOGGER.warn("Failed to regenerate chunk at {},{}: chunk not found", data.chunkX(), data.chunkZ());
+                }
+            }
+        }
+    }
+
     public static final MapCodec<PlotChunkGenerator> MAP_CODEC = RecordCodecBuilder.mapCodec(instance ->
         instance.group(
             BiomeSource.CODEC.fieldOf("biome_source").forGetter(generator -> generator.biomeSource)
@@ -418,6 +449,23 @@ public class PlotChunkGenerator extends ChunkGenerator {
         return CompletableFuture.completedFuture(chunk);
     }
 
+    public static void queueRegenerateChunk(int chunkX, int chunkZ, int minX, int minZ, int maxX, int maxZ) {
+        ChunkRegenQueue.addToQueue(new ChunkRegenData(chunkX, chunkZ, minX, minZ, maxX, maxZ));
+    }
+
+    private static void regenerateChunk(ChunkAccess chunk, int minX, int minZ, int maxX, int maxZ) {
+        for (int x = 0; x < 16; x++) {
+            for (int z = 0; z < 16; z++) {
+                int worldX = chunk.getPos().getMinBlockX() + x;
+                int worldZ = chunk.getPos().getMinBlockZ() + z;
+
+                if (worldX >= minX && worldX <= maxX && worldZ >= minZ && worldZ <= maxZ) {
+                    generateColumn(chunk, x, z, worldX, worldZ);
+                }
+            }
+        }
+    }
+
     /**
      * Generate a column of blocks for the given local chunk coordinates and world coordinates.
      * @param chunk the chunk to modify
@@ -426,7 +474,7 @@ public class PlotChunkGenerator extends ChunkGenerator {
      * @param worldX world X coordinate of the block being generated
      * @param worldZ world Z coordinate of the block being generated
      */
-    private void generateColumn(ChunkAccess chunk, int localX, int localZ, int worldX, int worldZ) {
+    public static void generateColumn(ChunkAccess chunk, int localX, int localZ, int worldX, int worldZ) {
         int plotX = Math.floorMod(worldX, PLOT_SIZE + ROAD_WIDTH);
         int plotZ = Math.floorMod(worldZ, PLOT_SIZE + ROAD_WIDTH);
         boolean isRoad = plotX < ROAD_WIDTH || plotZ < ROAD_WIDTH;

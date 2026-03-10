@@ -10,7 +10,7 @@ import net.minecraft.network.chat.Component;
  * A bunch of debug commands for WidePlots.
  */
 public class DebugCommands {
-    public static void register() {
+    public static void init() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             // Displays current dimension and generator.
             dispatcher.register(Commands.literal("plotdebug")
@@ -41,23 +41,6 @@ public class DebugCommands {
                         ), false);
                     }
 
-                    return 1;
-                })
-            );
-
-            // Teleports a player to the plot dimension.
-            dispatcher.register(Commands.literal("plottp")
-                .executes(context -> {
-                    var source = context.getSource();
-                    var player = source.getPlayerOrException();
-
-                    if (PlotDimension.PLOTDIM_LEVEL == null) {
-                        source.sendFailure(Component.literal("Plot dimension is not loaded!"));
-                        return 0;
-                    }
-
-                    player.teleportTo(PlotDimension.PLOTDIM_LEVEL, 0.5, 65.0, 0.5, player.getYRot(), player.getXRot());
-                    source.sendSuccess(() -> Component.literal("Teleported to plot dimension!"), false);
                     return 1;
                 })
             );
