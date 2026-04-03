@@ -89,6 +89,16 @@ public class PlotPermissions {
         return false;
     }
 
+    public int getPermissionSetIndex(String name) {
+        for (int i = 0; i < playerPermissions.size(); i++) {
+            if (playerPermissions.get(i).getName().equals(name)) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
     @Nullable
     public PlotPermissionSet getPermissionSet(String name) {
         for (PlotPermissionSet set : playerPermissions) {
@@ -119,8 +129,14 @@ public class PlotPermissions {
 
     public void reorganize(int from, int to) {
         if (from < 0 || from >= playerPermissions.size() || to < 0 || to >= playerPermissions.size()) {
-            throw new IndexOutOfBoundsException("Invalid from/to indices for reorganizing permission sets.");
+            // Clamp the indices to valid values.
+            from = Math.max(0, Math.min(from, playerPermissions.size() - 1));
+            to = Math.max(0, Math.min(to, playerPermissions.size() - 1));
         }
+        if (from == to) {
+            return; // No need to reorganize if the indices are the same.
+        }
+
         PlotPermissionSet permissionSet = playerPermissions.remove(from);
         playerPermissions.add(to, permissionSet);
     }
@@ -134,5 +150,6 @@ public class PlotPermissions {
         defaultPermissions.setPermission(PlotActionType.PVP, PlotPermission.DENY);
         defaultPermissions.setPermission(PlotActionType.SET_HOME, PlotPermission.DENY);
         defaultPermissions.setPermission(PlotActionType.SETTINGS, PlotPermission.DENY);
+        defaultPermissions.setPermission(PlotActionType.PISTONS, PlotPermission.DENY);
     }
 }

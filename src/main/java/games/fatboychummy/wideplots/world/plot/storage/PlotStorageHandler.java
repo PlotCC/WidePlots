@@ -3,6 +3,7 @@ package games.fatboychummy.wideplots.world.plot.storage;
 import com.mojang.authlib.GameProfile;
 import games.fatboychummy.wideplots.util.PlotUtility;
 import games.fatboychummy.wideplots.world.plot.permissions.PlotPermissionHandler;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Tuple;
@@ -54,19 +55,19 @@ public class PlotStorageHandler {
                 ownerName = online.getName().getString();
             } else {
                 GameProfile profile = server.getProfileCache().get(ownerUUID).orElse(null);
-                ownerName = profile != null ? profile.getName() : "Unknown Player";
+                ownerName = profile != null ? profile.getName() : Component.translatable("commands.wideplots.response.generic.unkown_player").getString();
             }
 
-            return new SoftErrorState(false, "Plot is already claimed by " + ownerName + ".");
+            return new SoftErrorState(true, Component.translatable("commands.wideplots.response.claim.already_claimed", ownerName));
         }
 
         if (!PlotUtility.isActuallyInBounds(player.blockPosition())) {
-            return new SoftErrorState(false, "You must stand within the plot you want to claim.");
+            return new SoftErrorState(true, Component.translatable("commands.wideplots.response.generic.not_in_plot"));
         }
 
         // Actually claim the plot.
         forceClaimPlot(player.getBlockX(), player.getBlockZ(), player.getStringUUID());
-        return new SoftErrorState(true, "Plot claimed successfully.");
+        return new SoftErrorState(false, Component.translatable("commands.wideplots.response.claim.success"));
     }
 
     /**
@@ -78,20 +79,20 @@ public class PlotStorageHandler {
         long plotKey = PlotUtility.keyFromCoords(player.getBlockX(), player.getBlockZ());
 
         if (!activePlots.containsKey(plotKey)) {
-            return new SoftErrorState(false, "Plot is not claimed.");
+            return new SoftErrorState(true, Component.translatable("commands.wideplots.response.unclaim.not_claimed"));
         }
 
         if (!activePlots.get(plotKey).getOwnerUUID().equals(player.getStringUUID())) {
-            return new SoftErrorState(false, "You do not own this plot.");
+            return new SoftErrorState(true, Component.translatable("commands.wideplots.response.unclaim.not_owner"));
         }
 
         if (!PlotUtility.isActuallyInBounds(player.blockPosition())) {
-            return new SoftErrorState(false, "You must stand within the plot you want to unclaim.");
+            return new SoftErrorState(true, Component.translatable("commands.wideplots.response.generic.not_in_plot"));
         }
 
         // Actually unclaim the plot.
         forceUnclaimPlot(player.getBlockX(), player.getBlockZ());
-        return new SoftErrorState(true, "Plot unclaimed successfully.");
+        return new SoftErrorState(false, Component.translatable("commands.wideplots.response.unclaim.success"));
     }
 
     /**

@@ -16,11 +16,12 @@ public class PlotPermissionsCreateSetCommand {
         PlotStorage plot = PlotStorageHandler.getPlot(context.getSource().getPlayer());
         String setName = context.getArgument("name", String.class);
         if (plot.getPermissions().hasPermissionSet(setName)) {
-            CommandUtil.respondFailure(context, "A permission set with that name already exists.");
+            CommandUtil.translatableFailure(context, "commands.wideplots.response.permissions.set_exists");
             return 0;
         }
 
         plot.getPermissions().addPermissionSet(setName);
+        CommandUtil.translatableSuccess(context, "commands.wideplots.response.permissions.created_set", setName);
         return 1;
     }
 }

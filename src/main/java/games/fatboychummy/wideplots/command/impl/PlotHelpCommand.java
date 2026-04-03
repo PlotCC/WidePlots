@@ -36,7 +36,7 @@ public class PlotHelpCommand {
         return 1;
     }
 
-    private String getDescription(String usage) {
+    private static String getDescription(String usage) {
         return "No description available.";
     }
 }

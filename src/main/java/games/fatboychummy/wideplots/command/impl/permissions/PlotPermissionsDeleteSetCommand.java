@@ -17,11 +17,11 @@ public class PlotPermissionsDeleteSetCommand {
         String setName = context.getArgument("name", String.class);
         if (plot.getPermissions().hasPermissionSet(setName)) {
             plot.getPermissions().removePermissionSet(setName);
-            CommandUtil.respondSuccess(context, "Permission set deleted successfully.");
+            CommandUtil.translatableSuccess(context, "commands.wideplots.response.permissions.deleted_set");
             return 1;
         }
 
-        CommandUtil.respondFailure(context, "No permission set with that name exists.");
+        CommandUtil.translatableFailure(context, "commands.wideplots.response.permissions.no_set_exists");
         return 0;
     }
 }

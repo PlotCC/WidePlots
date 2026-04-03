@@ -3,8 +3,10 @@ package games.fatboychummy.wideplots.command.impl.claims;
 import com.mojang.brigadier.context.CommandContext;
 import games.fatboychummy.wideplots.command.PermissionLevel;
 import games.fatboychummy.wideplots.util.CommandUtil;
+import games.fatboychummy.wideplots.util.PlotUtility;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorageHandler;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
 public class PlotForceClaimCommand {
@@ -16,8 +18,12 @@ public class PlotForceClaimCommand {
         ServerPlayer target = context.getArgument("player", ServerPlayer.class);
         player = target != null ? target : context.getSource().getPlayer();
 
+        if (!PlotUtility.isActuallyInBounds(player.blockPosition())) {
+            CommandUtil.translatableFailure(context, "commands.wideplots.response.generic.not_in_plot");
+            return 0;
+        }
         PlotStorageHandler.forceClaimPlot(player.getBlockX(), player.getBlockZ(), player.getStringUUID()); // baseChecks ensures `player` is not null.
-        CommandUtil.respondSuccess(context, "Plot force-claimed as " + player.getName().getString() + "!");
+        CommandUtil.translatableSuccess(context, "commands.wideplots.response.force_claim.success", player.getName().getString());
         return 1;
     }
 }

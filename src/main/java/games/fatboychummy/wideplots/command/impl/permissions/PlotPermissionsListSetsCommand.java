@@ -8,6 +8,7 @@ import games.fatboychummy.wideplots.world.plot.permissions.*;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorage;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorageHandler;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
@@ -28,20 +29,18 @@ public class PlotPermissionsListSetsCommand {
         PlotStorage plot = PlotStorageHandler.getPlot(context.getSource().getPlayer());
 
         StringBuilder builder = new StringBuilder();
+        builder.append(Component.translatable("commands.wideplots.response.permissions.list.sets").getString());
 
         ArrayList<PlotPermissionSet> sets = plot.getPermissions().getPlayerPermissions();
         if (sets.isEmpty()) {
-            CommandUtil.respondSuccess(context, "No permission sets found.");
+            CommandUtil.translatableSuccess(context, "commands.wideplots.response.permissions.list.none");
             return 1;
         }
 
-        boolean first = true;
-        for (PlotPermissionSet set : sets) {
-            if (!first) {
-                builder.append("\n  ");
-            }
+        for (int i = 0; i < sets.size(); i++) {
+            PlotPermissionSet set = sets.get(i);
+            builder.append("\n  (p").append(i).append(") "); // Priority
             appendSet(builder, set);
-            first = false;
         }
         CommandUtil.respondSuccess(context, builder.toString());
         return 1;
@@ -52,9 +51,11 @@ public class PlotPermissionsListSetsCommand {
         builder.append(set.getName()).append(":\n    ");
 
         // Players
-        builder.append("Applies to ");
+        builder.append(Component.translatable("commands.wideplots.response.permissions.list.applies_to").getString())
+                .append(' ');
         if (set.isPlayerBlacklist()) {
-            builder.append("all players except ");
+            builder.append(Component.translatable("commands.wideplots.response.permissions.list.all_player_except").getString())
+                    .append(' ');
         }
         builder.append("(");
         String result = set.getPlayerUUIDs().stream()
@@ -63,9 +64,11 @@ public class PlotPermissionsListSetsCommand {
         builder.append(result).append(")\n    ");
 
         // Blocks
-        builder.append("Applies to ");
+        builder.append(Component.translatable("commands.wideplots.response.permissions.list.applies_to").getString())
+                .append(' ');
         if (set.isBlockBlacklist()) {
-            builder.append("all blocks except ");
+            builder.append(Component.translatable("commands.wideplots.response.permissions.list.all_block_except").getString())
+                    .append(' ');
         }
         builder.append("(");
         result = String.join(", ", set.getApplicableBlocks());
@@ -74,22 +77,31 @@ public class PlotPermissionsListSetsCommand {
         // Bounding box
         if (set.getBoundingBox() != null) {
             BoundingBox box = set.getBoundingBox();
-            builder.append("Applies within bounding box:\n      (")
+            builder.append(Component.translatable("commands.wideplots.response.permissions.list.bounding_box").getString());
+            builder.append("\n      (")
                     .append(box.minX()).append(", ").append(box.minY()).append(", ").append(box.minZ()).append(")\n      (")
                     .append(box.maxX()).append(", ").append(box.maxY()).append(", ").append(box.maxZ()).append(")\n    ");
+        } else {
+            builder.append(Component.translatable("commands.wideplots.response.permissions.list.no_bounding_box").getString())
+                    .append("\n    ");
         }
 
         // Permissions
         PlotPermissionList permissions = set.getPermissionList();
-        builder.append("Permissions:\n      ");
+        builder.append(Component.translatable("commands.wideplots.response.permissions.list.permissions").getString());
 
-        boolean first = true;
         for (PlotActionType action : permissions.getPermissions()) {
-            if (!first) {
-                builder.append("\n      ");
-            }
-            builder.append(action.toString()).append(": ").append(permissions.getPermission(action).toString());
-            first = false;
+            builder.append("\n      ");
+
+            PlotPermission perm = permissions.getPermission(action);
+
+            String actionTranslation = "commands.wideplots.response.permissions.list.actions."
+                    + action.toString().toLowerCase();
+            String permissionTranslation = "commands.wideplots.response.permissions.list.permission."
+                    + perm.toString().toLowerCase();
+
+            builder.append(Component.translatable(actionTranslation).getString())
+                    .append(": ").append(Component.translatable(permissionTranslation).getString());
         }
     }
 

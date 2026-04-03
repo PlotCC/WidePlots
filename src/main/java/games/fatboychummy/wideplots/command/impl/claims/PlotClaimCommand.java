@@ -6,6 +6,7 @@ import games.fatboychummy.wideplots.util.CommandUtil;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorageHandler;
 import games.fatboychummy.wideplots.world.plot.storage.SoftErrorState;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
 public class PlotClaimCommand {
@@ -20,7 +21,7 @@ public class PlotClaimCommand {
             return 0;
         }
 
-        CommandUtil.respondSuccess(context, "Plot claimed successfully!");
+        CommandUtil.translatableSuccess(context, "commands.wideplots.response.claim.success");
         return 1;
     }
 }

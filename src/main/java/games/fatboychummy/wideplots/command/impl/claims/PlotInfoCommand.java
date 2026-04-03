@@ -53,6 +53,7 @@ public class PlotInfoCommand {
             case ACCESS -> "Access Containers";
             case SET_HOME -> "Set Home";
             case SETTINGS -> "Change Settings";
+            case PISTONS -> "Pistons";
         };
     }
 }

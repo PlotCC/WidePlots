@@ -7,6 +7,7 @@ import games.fatboychummy.wideplots.world.plot.permissions.PlotPermissionSet;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorage;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorageHandler;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
 
 public class PlotPermissionsUpdateSetSetActiveCommand {
     public static int execute(CommandContext<CommandSourceStack> context) {
@@ -19,12 +20,16 @@ public class PlotPermissionsUpdateSetSetActiveCommand {
         PlotPermissionSet set = plot.getPermissions().getPermissionSet(setName);
 
         if (set == null) {
-            CommandUtil.respondFailure(context, "No permission set with that name exists.");
+            CommandUtil.translatableFailure(context, "commands.wideplots.response.permissions.no_set_exists");
             return 0;
         }
 
         set.setActive(active);
-        CommandUtil.respondSuccess(context, "Set permission set " + setName + " to " + (active ? "active" : "inactive") + "!");
+        CommandUtil.translatableSuccess(context,
+                "commands.wideplots.response.permissions.toggle_set",
+                setName,
+                active ? Component.translatable("commands.wideplots.response.generic.active") : Component.translatable("commands.wideplots.response.generic.inactive")
+        );
         return 1;
     }
 }

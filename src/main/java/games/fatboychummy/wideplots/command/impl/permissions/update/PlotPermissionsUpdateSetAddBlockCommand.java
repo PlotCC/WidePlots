@@ -8,6 +8,7 @@ import games.fatboychummy.wideplots.world.plot.permissions.PlotPermissionSet;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorage;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorageHandler;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 public class PlotPermissionsUpdateSetAddBlockCommand {
@@ -21,17 +22,20 @@ public class PlotPermissionsUpdateSetAddBlockCommand {
         PlotPermissionSet set = plot.getPermissions().getPermissionSet(setName);
 
         if (set == null) {
-            CommandUtil.respondFailure(context, "No permission set with that name exists.");
+            CommandUtil.translatableFailure(context, "commands.wideplots.response.permissions.no_set_exists");
             return 0;
         }
 
         if (set.hasApplicableBlock(block.toString())) {
-            CommandUtil.respondFailure(context, "That block is already in this permission set.");
+            CommandUtil.translatableFailure(context,
+                    "commands.wideplots.response.permissions.x_in_set",
+                    Component.translatable("commands.wideplots.response.generic.block")
+            );
             return 0;
         }
 
         set.addApplicableBlock(block.toString());
-        CommandUtil.respondSuccess(context, "Added " + block.toString() + " to permission set " + setName + "!");
+        CommandUtil.translatableSuccess(context, "commands.wideplots.response.permissions.added_x_to_set", block.toString(), setName);
         return 1;
     }
 }

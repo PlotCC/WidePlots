@@ -19,13 +19,13 @@ public class PlotPermissionsUpdateSetSetPlayerWhitelistCommand {
         PlotPermissionSet set = plot.getPermissions().getPermissionSet(setName);
 
         if (set == null) {
-            CommandUtil.respondFailure(context, "No permission set with that name exists.");
+            CommandUtil.translatableFailure(context, "commands.wideplots.response.permissions.no_set_exists");
             return 0;
         }
 
         // Use a whitelist.
         set.setPlayerBlacklist(false);
-        CommandUtil.respondSuccess(context, "Permission set " + setName + " is now using a player whitelist.");
+        CommandUtil.translatableSuccess(context, "commands.wideplots.response.blacklist.disabled", setName);
         return 1;
     }
 }

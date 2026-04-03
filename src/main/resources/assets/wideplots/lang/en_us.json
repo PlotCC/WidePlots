@@ -1,0 +1,81 @@
+{
+  "item.wideplots.bounding_tool": "Bounding Tool",
+
+  "commands.wideplots.response.default_error": "An unknown error occurred.",
+
+  "commands.wideplots.response.generic.player": "player",
+  "commands.wideplots.response.generic.block": "block",
+  "commands.wideplots.response.generic.active": "active",
+  "commands.wideplots.response.generic.inactive": "inactive",
+
+  "commands.wideplots.response.generic.not_in_plot": "You are not currently standing within a plot.",
+  "commands.wideplots.response.generic.unkown_player": "Unknown Player",
+  "commands.wideplots.response.generic.resend_can_wipe": "Are you sure? This will wipe the plot! Resend the command within %d seconds to confirm.",
+
+  "commands.wideplots.response.permissions.no_set_exists": "No permission set with that name exists.",
+  "commands.wideplots.response.permissions.x_in_set": "That %s is already in that permission set.",
+  "commands.wideplots.response.permissions.x_not_in_set": "That %s is not in that permission set.",
+  "commands.wideplots.response.permissions.added_x_to_set": "Added %s to permission set %s!",
+  "commands.wideplots.response.permissions.removed_x_from_set": "Removed %s from permission set %s!",
+  "commands.wideplots.response.permissions.invalid_player": "Invalid player specified.",
+  "commands.wideplots.response.permissions.only_one_x": "Only one %s can be added at a time.",
+  "commands.wideplots.response.permissions.toggle_set": "Set permission set %s to %s!",
+  "commands.wideplots.response.permissions.created_set": "Created permission set '%s'.",
+  "commands.wideplots.response.permissions.set_creation_failed": "Failed to create permission set '%s'!",
+  "commands.wideplots.response.permissions.set_exists": "A permission set with that name already exists.",
+  "commands.wideplots.response.permissions.deleted_set": "Permission set deleted.",
+
+  "commands.wideplots.response.permissions.list.sets": "Permission sets:",
+  "commands.wideplots.response.permissions.list.none": "No permission sets found.",
+  "commands.wideplots.response.permissions.list.all_player_except": "all players except",
+  "commands.wideplots.response.permissions.list.all_block_except": "all blocks except",
+  "commands.wideplots.response.permissions.list.applies_to": "Applies to",
+  "commands.wideplots.response.permissions.list.bounding_box": "Applies within bounding box:",
+  "commands.wideplots.response.permissions.list.no_bounding_box": "Applies to the entire plot.",
+  "commands.wideplots.response.permissions.list.permissions": "Permissions:",
+  "commands.wideplots.response.permissions.list.actions.build": "BUILD",
+  "commands.wideplots.response.permissions.list.actions.access": "ACCESS",
+  "commands.wideplots.response.permissions.list.actions.interact": "INTERACT",
+  "commands.wideplots.response.permissions.list.actions.pvp": "PVP",
+  "commands.wideplots.response.permissions.list.actions.pve": "PVE",
+  "commands.wideplots.response.permissions.list.actions.enter": "ENTER",
+  "commands.wideplots.response.permissions.list.actions.set_home": "SET HOME",
+  "commands.wideplots.response.permissions.list.actions.settings": "SETTINGS",
+  "commands.wideplots.response.permissions.list.actions.pistons": "PISTONS",
+  "commands.wideplots.response.permissions.list.permission.grant": "GRANT",
+  "commands.wideplots.response.permissions.list.permission.unchanged": "UNCHANGED",
+  "commands.wideplots.response.permissions.list.permission.deny": "DENY",
+
+  "commands.wideplots.response.untrust.not_trusted": "That player is not currently trusted in this plot.",
+  "commands.wideplots.response.untrust.removed_player": "Removed %s from trusted players for this plot!",
+
+  "commands.wideplots.response.trust.already_trusted": "That player is already trusted in this plot.",
+  "commands.wideplots.response.trust.added_player": "Added %s to trusted players for this plot!",
+
+  "commands.wideplots.response.tool.get": "Here's a really fancy stick!",
+
+  "commands.wideplots.response.unban.removed_player": "Removed %s from banned players for this plot!",
+  "commands.wideplots.response.unban.not_banned": "That player is not currently banned from this plot.",
+
+  "commands.wideplots.response.ban.already_banned": "That player is already banned from this plot.",
+  "commands.wideplots.response.ban.added_player": "Added %s to banned players for this plot!",
+
+  "commands.wideplots.response.set.permission": "Set permission '%s' to %s for permission set %s!",
+  "commands.wideplots.response.set.reorganized": "Set priority of %s to %d",
+
+  "commands.wideplots.response.blacklist.enabled": "Permission set %s is now using a blacklist for %s.",
+  "commands.wideplots.response.blacklist.disabled": "Permission set %s is now using a whitelist for %s.",
+
+  "commands.wideplots.response.claim.already_claimed": "This plot is already claimed by %s.",
+  "commands.wideplots.response.claim.success": "Plot claimed successfully!",
+
+  "commands.wideplots.response.force_claim.success": "Plot force-claimed as %s!",
+
+  "commands.wideplots.response.force_unclaim.success": "Plot force-unclaimed!",
+  "commands.wideplots.response.force_unclaim.timed_out": "Force-Unclaim request expired.",
+
+  "commands.wideplots.response.unclaim.not_claimed": "This plot is not claimed.",
+  "commands.wideplots.response.unclaim.not_owner": "You do not own this plot.",
+  "commands.wideplots.response.unclaim.success": "Plot unclaimed successfully.",
+  "commands.wideplots.response.unclaim.timed_out": "Plot Unclaim request expired."
+}

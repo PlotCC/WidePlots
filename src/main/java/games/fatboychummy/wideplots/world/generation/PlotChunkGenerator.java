@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import games.fatboychummy.wideplots.WidePlots;
+import games.fatboychummy.wideplots.world.PlotDimension;
 import games.fatboychummy.wideplots.world.structures.PlotStructures;
 import games.fatboychummy.wideplots.world.structures.RoadStructure;
 import games.fatboychummy.wideplots.world.structures.RoadStructureManager;
@@ -11,6 +12,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelHeightAccessor;
@@ -21,10 +23,9 @@ import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.ChunkAccess;
-import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.chunk.ChunkStatus;
+import net.minecraft.world.level.chunk.*;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.RandomState;
@@ -50,7 +51,7 @@ public class PlotChunkGenerator extends ChunkGenerator {
         ServerTickEvents.START_SERVER_TICK.register(PlotChunkGenerator::tickRegenerator);
     }
 
-    private static final int ticksPerRegen = 5;
+    private static final int ticksPerRegen = 20; // 1 second at 20 TPS
     private static int tickCounter = 0;
     public static void tickRegenerator(MinecraftServer server) {
         if (tickCounter < ticksPerRegen) {
@@ -62,13 +63,15 @@ public class PlotChunkGenerator extends ChunkGenerator {
         if (server.isRunning()) {
             ChunkRegenData data = ChunkRegenQueue.next();
             if (data != null) {
-                ChunkAccess chunk = server.overworld().getChunk(data.chunkX(), data.chunkZ(), ChunkStatus.FULL);
-
-                if (chunk != null) {
-                    regenerateChunk(chunk, data.minBlockX(), data.minBlockZ(), data.maxBlockX(), data.maxBlockZ());
-                } else {
-                    WidePlots.LOGGER.warn("Failed to regenerate chunk at {},{}: chunk not found", data.chunkX(), data.chunkZ());
+                WidePlots.LOGGER.info("Regenerating plot at ({},{})-({},{}), chunk ({},{})", data.minBlockX(), data.minBlockZ(), data.maxBlockX(), data.maxBlockZ(), data.chunkX(), data.chunkZ());
+                ServerLevel level = server.getLevel(PlotDimension.PLOTDIM);
+                if (level == null || level.isClientSide()) {
+                    WidePlots.LOGGER.warn("Attempted to regenerate plot on client side, skipping.");
+                    return;
                 }
+
+                regenerateChunk(level, data.chunkX(), data.chunkZ(), data.minBlockX(), data.minBlockZ(), data.maxBlockX(), data.maxBlockZ());
+                WidePlots.LOGGER.info("Done regenerating chunk ({},{})", data.chunkX(), data.chunkZ());
             }
         }
     }
@@ -453,17 +456,50 @@ public class PlotChunkGenerator extends ChunkGenerator {
         ChunkRegenQueue.addToQueue(new ChunkRegenData(chunkX, chunkZ, minX, minZ, maxX, maxZ));
     }
 
-    private static void regenerateChunk(ChunkAccess chunk, int minX, int minZ, int maxX, int maxZ) {
-        for (int x = 0; x < 16; x++) {
-            for (int z = 0; z < 16; z++) {
-                int worldX = chunk.getPos().getMinBlockX() + x;
-                int worldZ = chunk.getPos().getMinBlockZ() + z;
+    private static void regenerateChunk(ServerLevel level, int chunkX, int chunkZ, int minX, int minZ, int maxX, int maxZ) {
+        int minBuildHeight = level.getMinBuildHeight();
+        int maxBuildHeight = level.getMaxBuildHeight();
+        LevelChunk chunk = level.getChunk(chunkX, chunkZ);
+        int minChunkX = chunk.getPos().getMinBlockX();
+        int minChunkZ = chunk.getPos().getMinBlockZ();
+        chunk.getBlockEntities().clear();
+        for (int x = 0; x <= 15; x++) {
+            int worldX = minChunkX + x;
 
-                if (worldX >= minX && worldX <= maxX && worldZ >= minZ && worldZ <= maxZ) {
-                    generateColumn(chunk, x, z, worldX, worldZ);
+            if (worldX < minX || worldX > maxX) {
+                continue; // Skip columns outside the specified X range
+            }
+
+            for (int z = 0; z <= 15; z++) {
+                int worldZ = minChunkZ + z;
+
+                if (worldZ < minZ || worldZ > maxZ) {
+                    continue; // Skip columns outside the specified Z range
                 }
+
+                generateSectionsByColumn(level, chunkX, chunkZ, x, z, minBuildHeight, maxBuildHeight);
             }
         }
+        chunk.setUnsaved(true);
+    }
+
+    public static void generateSectionsByColumn(ServerLevel level, int chunkX, int chunkZ, int localX, int localZ, int minBuildHeight, int maxBuildHeight) {
+        BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
+
+        mutablePos.set(chunkX * 16 + localX, minBuildHeight, chunkZ * 16 + localZ);
+        level.setBlock(mutablePos, Blocks.BEDROCK.defaultBlockState(), Block.UPDATE_ALL);
+
+        for (int y = minBuildHeight + 1; y < GROUND_LEVEL - 2; y++) {
+            mutablePos.setY(y);
+            level.setBlock(mutablePos, Blocks.STONE.defaultBlockState(), Block.UPDATE_ALL);
+        }
+
+        mutablePos.setY(GROUND_LEVEL - 2);
+        level.setBlock(mutablePos, Blocks.DIRT.defaultBlockState(), Block.UPDATE_ALL);
+        mutablePos.setY(GROUND_LEVEL - 1);
+        level.setBlock(mutablePos, Blocks.DIRT.defaultBlockState(), Block.UPDATE_ALL);
+        mutablePos.setY(GROUND_LEVEL);
+        level.setBlock(mutablePos, Blocks.GRASS_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
     }
 
     /**

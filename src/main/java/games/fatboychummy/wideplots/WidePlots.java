@@ -3,8 +3,12 @@ package games.fatboychummy.wideplots;
 import com.mojang.logging.LogUtils;
 import games.fatboychummy.wideplots.command.PlotCommands;
 import games.fatboychummy.wideplots.debug.DebugCommands;
+import games.fatboychummy.wideplots.item.ModItems;
+import games.fatboychummy.wideplots.util.TimedRequestHelper;
 import games.fatboychummy.wideplots.world.PlotDimension;
+import games.fatboychummy.wideplots.world.generation.PlotChunkGenerator;
 import games.fatboychummy.wideplots.world.player.PlotPlayerYeeter;
+import games.fatboychummy.wideplots.world.plot.permissions.BounderHandler;
 import games.fatboychummy.wideplots.world.plot.permissions.PlotPermissionHandler;
 import games.fatboychummy.wideplots.world.plot.permissions.PlotPermissions;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorageHandler;
@@ -30,15 +34,21 @@ public class WidePlots implements ModInitializer {
         PlotDimension.init();
         PlotPlayerYeeter.init();
 
-        // Load structures and commands commands.
+        // Load blocks and structures
+        ModItems.registerModItems();
         PlotStructures.init();
         DebugCommands.init();
+
+        // Load commands
         PlotCommands.init();
 
         // Permission and plot storage initialization.
         PlotPermissions.init();
         PlotPermissionHandler.init();
         PlotStorageHandler.init();
+        PlotChunkGenerator.init();
+        BounderHandler.init();
+        TimedRequestHelper.init();
 
         LOGGER.info("WidePlots initialized successfully");
     }

@@ -1,7 +1,10 @@
 package games.fatboychummy.wideplots.world.plot.storage;
 
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+
 public class SoftErrorState {
-    private final String message;
+    private final MutableComponent message;
     private final boolean isError;
 
     /**
@@ -10,20 +13,20 @@ public class SoftErrorState {
      */
     public SoftErrorState(boolean isError) {
         this.isError = isError;
-        this.message = "An unknown error occurred";
+        this.message = Component.translatable("command.response.default_error");
     }
 
     /**
      * Create a SoftErrorState with the error state and a custom message.
      * @param isError Whether this SoftErrorState represents an error.
-     * @param message The message to include with this SoftErrorState, which can be used to provide more information about the error if isError is true.
+     * @param component The message to include with this SoftErrorState, which can be used to provide more information about the error if isError is true.
      */
-    public SoftErrorState(boolean isError, String message) {
+    public SoftErrorState(boolean isError, MutableComponent component) {
         this.isError = isError;
-        this.message = message;
+        this.message = component;
     }
 
-    public String getMessage() {
+    public MutableComponent getMessage() {
         return this.message;
     }
 

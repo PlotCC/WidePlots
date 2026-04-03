@@ -15,6 +15,7 @@ public enum PlotActionType implements StringRepresentable {
     ENTER,    // Allows entering the plot (e.g. walking onto it).
     SET_HOME, // Allows setting a home location within the plot.
     SETTINGS, // Allows changing settings of the plot.
+    PISTONS,  // Allows pistons to extend/retract blocks within the plot.
     ;
 
     @Override

@@ -7,6 +7,7 @@ import games.fatboychummy.wideplots.world.plot.permissions.PlotPermissionSet;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorage;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorageHandler;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
 
 public class PlotPermissionsUpdateSetSetBlockWhitelistCommand {
     public static int execute(CommandContext<CommandSourceStack> context) {
@@ -18,13 +19,17 @@ public class PlotPermissionsUpdateSetSetBlockWhitelistCommand {
         PlotPermissionSet set = plot.getPermissions().getPermissionSet(setName);
 
         if (set == null) {
-            CommandUtil.respondFailure(context, "No permission set with that name exists.");
+            CommandUtil.translatableFailure(context, "commands.wideplots.response.permissions.no_set_exists");
             return 0;
         }
 
         // Use a whitelist.
         set.setBlockBlacklist(false);
-        CommandUtil.respondSuccess(context, "Permission set " + setName + " is now using a block whitelist.");
+        CommandUtil.translatableSuccess(context,
+                "commands.wideplots.response.blacklist.disabled",
+                setName,
+                Component.translatable("commands.wideplots.response.generic.block")
+        );
         return 1;
     }
 }

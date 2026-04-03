@@ -4,10 +4,13 @@ import games.fatboychummy.wideplots.command.arguments.PlotActionTypeArgument;
 import games.fatboychummy.wideplots.command.arguments.PlotPermissionArgument;
 import games.fatboychummy.wideplots.command.impl.*;
 import games.fatboychummy.wideplots.command.impl.claims.*;
-import games.fatboychummy.wideplots.command.impl.permissions.PlotPermissionsCreateSetCommand;
-import games.fatboychummy.wideplots.command.impl.permissions.PlotPermissionsDeleteSetCommand;
-import games.fatboychummy.wideplots.command.impl.permissions.PlotPermissionsListSetsCommand;
+import games.fatboychummy.wideplots.command.impl.permissions.*;
 import games.fatboychummy.wideplots.command.impl.permissions.update.*;
+import games.fatboychummy.wideplots.command.impl.settings.getters.*;
+import games.fatboychummy.wideplots.command.impl.settings.setters.*;
+import games.fatboychummy.wideplots.command.impl.storage.PlotDownloadCommand;
+import games.fatboychummy.wideplots.command.impl.storage.PlotLoadCommand;
+import games.fatboychummy.wideplots.command.impl.storage.PlotSaveCommand;
 import games.fatboychummy.wideplots.command.impl.storage.PlotWipeCommand;
 import games.fatboychummy.wideplots.command.impl.teleportation.PlotTpCommand;
 import games.fatboychummy.wideplots.command.impl.teleportation.PlotVisitCommand;
@@ -21,7 +24,7 @@ import net.minecraft.commands.arguments.GameModeArgument;
 public class PlotCommands {
     public static void init() {
         // Prepare any commands that need preparation before registration.
-        // PlotClaimCommand.init();
+        PlotWipeCommand.init();
 
         // Register all commands.
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
@@ -56,12 +59,12 @@ public class PlotCommands {
                                                     .executes(PlotPermissionsCreateSetCommand::execute)
                                             )
                                     )
-                                    .then(Commands.literal("getBoundingStick")
+                                    .then(Commands.literal("getBoundingTool")
                                             .then(Commands.argument("name", com.mojang.brigadier.arguments.StringArgumentType.string())
-                                                .executes(PlotPermissionsUpdateSetGetBoundingStickCommand::execute)
+                                                .executes(PlotPermissionsGetBoundingToolCommand::execute)
                                             )
                                     )
-                                    .then(Commands.literal("listSets"))
+                                    .then(Commands.literal("listSets")
                                             .executes(PlotPermissionsListSetsCommand::execute)
                                     )
                                     .then(Commands.literal("deleteSet")
@@ -128,7 +131,9 @@ public class PlotCommands {
                             )
                             .then(Commands.literal("visit")
                                     .then(Commands.argument("player", net.minecraft.commands.arguments.GameProfileArgument.gameProfile())
-                                            .executes(PlotVisitCommand::execute)
+                                            .then(Commands.argument("plotName", com.mojang.brigadier.arguments.StringArgumentType.string())
+                                                .executes(PlotVisitCommand::execute)
+                                            )
                                     )
                             )
                             .then(Commands.literal("trust")
@@ -172,6 +177,12 @@ public class PlotCommands {
                                             .executes(PlotLoadCommand::execute)
                                     )
                             )
+                            .then(Commands.literal("download")
+                                    .executes(PlotDownloadCommand::execute) // Downloads the current plot.
+                                    .then(Commands.argument("name", com.mojang.brigadier.arguments.StringArgumentType.string())
+                                            .executes(PlotDownloadCommand::execute) // Downloads the specified saved plot.
+                                    )
+                            )
                             .then(Commands.literal("settings")
                                     .then(Commands.literal("set")
                                             .then(Commands.literal("name")
@@ -185,9 +196,7 @@ public class PlotCommands {
                                                     )
                                             )
                                             .then(Commands.literal("visitorTeleportLocation")
-                                                    .then(Commands.argument("visitorLocation", com.mojang.brigadier.arguments.StringArgumentType.string())
-                                                            .executes(PlotSettingsSetVisitorLocationCommand::execute)
-                                                    )
+                                                    .executes(PlotSettingsSetVisitorLocationCommand::execute)
                                             )
                                             .then(Commands.literal("welcomeMessage")
                                                     .then(Commands.argument("welcomeMessage", com.mojang.brigadier.arguments.StringArgumentType.string())
@@ -226,14 +235,6 @@ public class PlotCommands {
                                             )
                                     )
                             )
-            );
-
-            // Teleports a player to the plot dimension.
-            // TODO: Move this to `/plot tp` once the main command structure is done.
-            dispatcher.register(Commands.literal("plot_tp")
-                    .executes(context -> {
-
-                    })
             );
         });
     }

@@ -9,6 +9,7 @@ import games.fatboychummy.wideplots.world.plot.permissions.PlotPermissionSet;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorage;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorageHandler;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
 
 public class PlotPermissionsUpdateSetSetPermissionCommand {
     public static int execute(CommandContext<CommandSourceStack> context) {
@@ -22,12 +23,17 @@ public class PlotPermissionsUpdateSetSetPermissionCommand {
         PlotPermissionSet set = plot.getPermissions().getPermissionSet(setName);
 
         if (set == null) {
-            CommandUtil.respondFailure(context, "No permission set with that name exists.");
+            CommandUtil.translatableFailure(context, "commands.wideplots.response.permissions.no_set_exists");
             return 0;
         }
 
         set.setPermission(action, permission);
-        CommandUtil.respondSuccess(context, "Set permission " + action.getSerializedName() + " to " + permission.getSerializedName() + " for permission set " + setName + "!");
+        CommandUtil.translatableSuccess(context,
+                "commands.wideplots.response.set.permission",
+                action.getSerializedName(),
+                permission.getSerializedName(),
+                setName
+        );
         return 1;
     }
 }

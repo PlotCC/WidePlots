@@ -3,11 +3,15 @@ package games.fatboychummy.wideplots.util;
 import com.mojang.brigadier.context.CommandContext;
 import games.fatboychummy.wideplots.command.PermissionLevel;
 import games.fatboychummy.wideplots.world.PlotDimension;
+import games.fatboychummy.wideplots.world.plot.permissions.PlotActionType;
+import games.fatboychummy.wideplots.world.plot.permissions.PlotPermission;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorage;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorageHandler;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
+
 
 public class CommandUtil {
     /**
@@ -103,7 +107,20 @@ public class CommandUtil {
      * @param message The success message to send.
      */
     public static void respondSuccess(CommandContext<CommandSourceStack> context, String message) {
-        context.getSource().sendSuccess(() -> Component.literal(message), false);
+        context.getSource().sendSystemMessage(Component.literal(message));
+    }
+
+    /**
+     * Sends a success message to the command source.
+     * @param context The command context to respond to.
+     * @param message The success message to send.
+     */
+    public static void respondSuccess(CommandContext<CommandSourceStack> context, Component message) {
+        context.getSource().sendSystemMessage(message);
+    }
+
+    public static void translatableSuccess(CommandContext<CommandSourceStack> context, String key, Object... args) {
+        context.getSource().sendSystemMessage(Component.translatable(key, args));
     }
 
     /**
@@ -112,7 +129,28 @@ public class CommandUtil {
      * @param message The failure message to send.
      */
     public static void respondFailure(CommandContext<CommandSourceStack> context, String message) {
-        context.getSource().sendFailure(Component.literal(message));
+        context.getSource().sendSystemMessage(Component.literal(message)
+                .withStyle(style -> style.withColor(0xFF5555)));
+    }
+
+    public static void translatableFailure(
+            CommandContext<CommandSourceStack> context,
+            String key,
+            Object... args
+    ) {
+        context.getSource().sendSystemMessage(Component.translatable(key, args)
+                .withStyle(style -> style.withColor(0xFF5555)));
+    }
+
+    /**
+     * Sends a failure message to the command source. Adds `.withStyle(style -> style.withColor(0xFF5555))`
+     * @param context The command context to respond to.
+     * @param message The failure message to send.
+     */
+    public static void respondFailure(CommandContext<CommandSourceStack> context, MutableComponent message) {
+        context.getSource().sendSystemMessage(
+                message.withStyle(style -> style.withColor(0xFF5555))
+        );
     }
 
 
@@ -139,4 +177,25 @@ public class CommandUtil {
 
         return false;
     }
+
+    /**
+     * Checks if the player has permission to perform the given action in the given plot. If not, sends an appropriate error message and returns true.
+     * `if (playerBlockedByPermissions(context, plot, PlotActionType.BUILD)) {return 0;}` is a common pattern in many plot commands.
+     * @param context The command context to check and respond to if the player does not have permission to perform the action in the plot.
+     * @param plot The plot to check permissions for.
+     * @param action The action to check permissions for.
+     * @return True if the player does not have permission to perform the action in the plot, false if they do have permission.
+     */
+    public static boolean blockedByPermissions(CommandContext<CommandSourceStack> context, PlotStorage plot, PlotActionType action) {
+        ServerPlayer player = context.getSource().getPlayer();
+        assert player != null;
+
+        if (plot.getPermissions().getActionResult(player.getStringUUID(), action, null, null) == PlotPermission.GRANT) {
+            CommandUtil.respondFailure(context, "You do not have permission to perform this action in this plot.");
+            return true;
+        }
+        return false;
+    }
+
+
 }

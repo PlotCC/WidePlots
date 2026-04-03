@@ -7,6 +7,7 @@ import games.fatboychummy.wideplots.world.plot.permissions.PlotPermissionSet;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorage;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorageHandler;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 public class PlotPermissionsUpdateSetRemoveBlockCommand {
@@ -20,17 +21,17 @@ public class PlotPermissionsUpdateSetRemoveBlockCommand {
         PlotPermissionSet set = plot.getPermissions().getPermissionSet(setName);
 
         if (set == null) {
-            CommandUtil.respondFailure(context, "No permission set with that name exists.");
+            CommandUtil.translatableFailure(context, "commands.wideplots.response.permissions.no_set_exists");
             return 0;
         }
 
         if (set.hasApplicableBlock(block.toString())) {
             set.removeApplicableBlock(block.toString());
-            CommandUtil.respondSuccess(context, "Removed " + block.toString() + " from permission set " + setName + "!");
+            CommandUtil.translatableSuccess(context, "commands.wideplots.response.permissions.removed_x_from_set", block.toString(), setName);
             return 1;
         }
 
-        CommandUtil.respondFailure(context, "That block is not in this permission set.");
+        CommandUtil.translatableFailure(context, "commands.wideplots.response.permissions.x_not_in_set", Component.translatable("commands.wideplots.response.generic.block"));
         return 0;
     }
 }
