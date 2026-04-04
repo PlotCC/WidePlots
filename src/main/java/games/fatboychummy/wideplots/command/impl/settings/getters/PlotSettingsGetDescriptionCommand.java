@@ -7,6 +7,7 @@ import games.fatboychummy.wideplots.world.plot.permissions.PlotActionType;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorage;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorageHandler;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
 
 public class PlotSettingsGetDescriptionCommand {
     public static int execute(CommandContext<CommandSourceStack> context) {
@@ -16,7 +17,12 @@ public class PlotSettingsGetDescriptionCommand {
 
         if (CommandUtil.blockedByPermissions(context, plot, PlotActionType.SETTINGS)) {return 0;}
 
-        CommandUtil.respondSuccess(context, "The description of this plot is '" + plot.getDescription() + "'.");
+        CommandUtil.translatableSuccess(
+                context,
+                "commands.wideplots.response.settings.get.generic_x",
+                Component.translatable("commands.wideplots.response.settings.description").getString(),
+                plot.getDescription()
+        );
         return 1;
     }
 }

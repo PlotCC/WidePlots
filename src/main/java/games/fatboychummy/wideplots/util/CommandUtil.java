@@ -19,7 +19,7 @@ public class CommandUtil {
      * @param context The command context to respond to.
      */
     public static void notYetImplemented(CommandContext<CommandSourceStack> context) {
-        respondFailure(context, "This command is not yet implemented!");
+        translatableFailure(context, "commands.wideplots.response.generic.nyi");
     }
 
     /**
@@ -27,7 +27,7 @@ public class CommandUtil {
      * @param context The command context to respond to.
      */
     public static void noPermission(CommandContext<CommandSourceStack> context) {
-        respondFailure(context, "You do not have permission to use this command!");
+        translatableFailure(context, "commands.wideplots.response.generic.no_permission");
     }
 
     /**
@@ -35,7 +35,7 @@ public class CommandUtil {
      * @param context The command context to respond to.
      */
     public static void notAPlayer(CommandContext<CommandSourceStack> context) {
-        respondFailure(context, "Only players can use this command!");
+        translatableFailure(context, "commands.wideplots.response.generic.only_players");
     }
 
     /**
@@ -43,7 +43,7 @@ public class CommandUtil {
      * @param context The command context to respond to.
      */
     public static void notInPlotDimension(CommandContext<CommandSourceStack> context) {
-        respondFailure(context, "You must be in the plot dimension to use this command!");
+        translatableFailure(context, "commands.wideplots.response.generic.dimension");
     }
 
     /**
@@ -166,12 +166,12 @@ public class CommandUtil {
 
         PlotStorage plot = PlotStorageHandler.getPlot(player);
         if (plot == null) {
-            CommandUtil.respondFailure(context, "You must be standing in a claimed plot to use this command.");
+            translatableFailure(context, "commands.wideplots.response.generic.stand_in_plot");
             return true;
         }
 
         if (!plot.getOwnerUUID().equals(player.getStringUUID())) {
-            CommandUtil.respondFailure(context, "Only the plot owner can use this command.");
+            translatableFailure(context, "commands.wideplots.response.generic.only_owner");
             return true;
         }
 
@@ -191,7 +191,7 @@ public class CommandUtil {
         assert player != null;
 
         if (plot.getPermissions().getActionResult(player.getStringUUID(), action, null, null) == PlotPermission.GRANT) {
-            CommandUtil.respondFailure(context, "You do not have permission to perform this action in this plot.");
+            translatableFailure(context, "commands.wideplots.response.generic.no_permission_plot");
             return true;
         }
         return false;

@@ -8,6 +8,7 @@ import games.fatboychummy.wideplots.world.plot.storage.PlotStorage;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorageHandler;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.GameType;
 
 public class PlotSettingsSetGamemodeCommand {
@@ -20,7 +21,12 @@ public class PlotSettingsSetGamemodeCommand {
 
         GameType gameMode = context.getArgument("gamemode", GameType.class);
         plot.setVisitorGameMode(gameMode);
-        CommandUtil.respondSuccess(context, "Visitor gamemode updated.");
+        CommandUtil.translatableSuccess(
+                context,
+                "commands.wideplots.response.settings.set.generic_x",
+                Component.translatable("commands.wideplots.response.settings.gamemode").getString(),
+                gameMode.getName()
+        );
         return 1;
     }
 }

@@ -11,6 +11,13 @@
   "commands.wideplots.response.generic.not_in_plot": "You are not currently standing within a plot.",
   "commands.wideplots.response.generic.unkown_player": "Unknown Player",
   "commands.wideplots.response.generic.resend_can_wipe": "Are you sure? This will wipe the plot! Resend the command within %d seconds to confirm.",
+  "commands.wideplots.response.generic.nyi": "Command not yet implemented!",
+  "commands.wideplots.response.generic.no_permission": "You do not have permission to use this command!",
+  "commands.wideplots.response.generic.no_permission_plot": "You do not have permission to use this command in this plot!",
+  "commands.wideplots.response.generic.only_players": "Only players can use this command!",
+  "commands.wideplots.response.generic.dimension": "You must be in the plot dimension to use this command!",
+  "commands.wideplots.response.generic.stand_in_plot": "You must be standing in a claimed plot to use this command.",
+  "commands.wideplots.response.generic.only_owner": "Only the plot owner can use this command.",
 
   "commands.wideplots.response.permissions.no_set_exists": "No permission set with that name exists.",
   "commands.wideplots.response.permissions.x_in_set": "That %s is already in that permission set.",
@@ -45,6 +52,20 @@
   "commands.wideplots.response.permissions.list.permission.grant": "GRANT",
   "commands.wideplots.response.permissions.list.permission.unchanged": "UNCHANGED",
   "commands.wideplots.response.permissions.list.permission.deny": "DENY",
+
+  "commands.wideplots.response.settings.departure_message": "departure message",
+  "commands.wideplots.response.settings.description": "description",
+  "commands.wideplots.response.settings.gamemode": "gamemode",
+  "commands.wideplots.response.settings.name": "name",
+  "commands.wideplots.response.settings.visitor_location": "visitor location",
+  "commands.wideplots.response.settings.welcome_message": "welcome message",
+
+  "commands.wideplots.response.settings.get.visitor_location": "The visitor location of this plot is (%d, %d, %d)",
+  "commands.wideplots.response.settings.get.generic_x": "The %s of this plot is '%s'",
+
+  "commands.wideplots.response.settings.set.x_too_long": "Plot %s cannot be longer than %d characters.",
+  "commands.wideplots.response.settings.set.generic_x": "Plot %s set to '%s'",
+  "commands.wideplots.response.settings.set.visitor_location": "Visitor spawn location set to (%d, %d, %d)",
 
   "commands.wideplots.response.untrust.not_trusted": "That player is not currently trusted in this plot.",
   "commands.wideplots.response.untrust.removed_player": "Removed %s from trusted players for this plot!",

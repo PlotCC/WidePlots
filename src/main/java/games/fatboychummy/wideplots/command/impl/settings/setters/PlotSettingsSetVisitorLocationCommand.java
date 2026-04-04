@@ -23,7 +23,11 @@ public class PlotSettingsSetVisitorLocationCommand {
         BlockPos offset = pos.subtract(center);
         plot.setVisitorSpawnOffset(offset);
 
-        CommandUtil.respondSuccess(context, "Visitor spawn location updated.");
+        CommandUtil.translatableSuccess(
+                context,
+                "commands.wideplots.response.settings.set.visitor_location",
+                offset.getX(), offset.getY(), offset.getZ()
+        );
         return 1;
     }
 }

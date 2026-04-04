@@ -7,6 +7,7 @@ import games.fatboychummy.wideplots.world.plot.permissions.PlotActionType;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorage;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorageHandler;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
 
 public class PlotSettingsSetNameCommand {
     public static int execute(CommandContext<CommandSourceStack> context) {
@@ -18,12 +19,22 @@ public class PlotSettingsSetNameCommand {
         if (CommandUtil.blockedByPermissions(context, plot, PlotActionType.SETTINGS)) {return 0;}
 
         if (name.length() > PlotStorage.NAME_MAX_LENGTH) {
-            CommandUtil.respondFailure(context, "Plot name cannot be longer than " + PlotStorage.NAME_MAX_LENGTH + " characters.");
+            CommandUtil.translatableFailure(
+                    context,
+                    "commands.wideplots.response.settings.set.x_too_long",
+                    Component.translatable("commands.wideplots.response.settings.name").getString(),
+                    PlotStorage.NAME_MAX_LENGTH
+            );
             return 0;
         }
 
         plot.setName(name);
-        CommandUtil.respondSuccess(context, "Plot name set to '" + name + "'!");
+        CommandUtil.translatableSuccess(
+                context,
+                "commands.wideplots.response.settings.set.generic_x",
+                Component.translatable("commands.wideplots.response.settings.name").getString(),
+                name
+        );
         return 1;
     }
 }
