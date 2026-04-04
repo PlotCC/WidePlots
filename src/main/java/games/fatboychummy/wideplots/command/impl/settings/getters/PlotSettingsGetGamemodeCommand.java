@@ -7,6 +7,7 @@ import games.fatboychummy.wideplots.world.plot.permissions.PlotActionType;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorage;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorageHandler;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.GameType;
 
 public class PlotSettingsGetGamemodeCommand {
@@ -18,7 +19,12 @@ public class PlotSettingsGetGamemodeCommand {
         if (CommandUtil.blockedByPermissions(context, plot, PlotActionType.SETTINGS)) {return 0;}
 
         GameType gameMode = plot.getVisitorGameMode();
-        CommandUtil.respondSuccess(context, "The gamemode for visitors on this plot is '" + gameMode.getName() + "'.");
+        CommandUtil.translatableSuccess(
+                context,
+                "commands.wideplots.response.settings.get.generic_x",
+                Component.translatable("commands.wideplots.response.settings.gamemode").getString(),
+                gameMode.getName()
+        );
         return 1;
     }
 }

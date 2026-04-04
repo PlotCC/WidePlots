@@ -14,13 +14,19 @@ public class PlotTpCommand {
         ServerPlayer player = context.getSource().getPlayer();
 
         if (PlotDimension.PLOTDIM_LEVEL == null) {
-            CommandUtil.respondFailure(context, "Plot dimension is not loaded!");
+            CommandUtil.respondFailure(
+                    context,
+                    "commands.wideplots.response.tp.tp.not_loaded"
+            );
             return 0;
         }
 
         BlockPos spawnPos = PlotDimension.PLOTDIM_SPAWN;
         player.teleportTo(PlotDimension.PLOTDIM_LEVEL, spawnPos.getX(), spawnPos.getY(), spawnPos.getZ(), player.getYRot(), player.getXRot());
-        CommandUtil.respondSuccess(context, "Teleported to plot dimension!");
+        CommandUtil.respondSuccess(
+                context,
+                "commands.wideplots.response.tp.tp.teleported"
+        );
         return 1;
     }
 }

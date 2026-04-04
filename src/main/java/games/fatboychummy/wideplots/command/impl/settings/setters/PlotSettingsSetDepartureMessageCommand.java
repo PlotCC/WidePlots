@@ -7,6 +7,7 @@ import games.fatboychummy.wideplots.world.plot.permissions.PlotActionType;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorage;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorageHandler;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
 
 public class PlotSettingsSetDepartureMessageCommand {
     public static int execute(CommandContext<CommandSourceStack> context) {
@@ -18,12 +19,22 @@ public class PlotSettingsSetDepartureMessageCommand {
         if (CommandUtil.blockedByPermissions(context, plot, PlotActionType.SETTINGS)) {return 0;}
 
         if (departureMessage.length() > PlotStorage.DEPARTURE_MESSAGE_MAX_LENGTH) {
-            CommandUtil.respondFailure(context, "Plot departure message cannot be longer than " + PlotStorage.DEPARTURE_MESSAGE_MAX_LENGTH + " characters.");
+            CommandUtil.translatableFailure(
+                    context,
+                    Component.translatable("commands.wideplots.response.settings.departure_message").getString(),
+                    "commands.wideplots.response.settings.set.x_too_long",
+                    PlotStorage.DEPARTURE_MESSAGE_MAX_LENGTH
+            );
             return 0;
         }
 
         plot.setDepartureMessage(departureMessage);
-        CommandUtil.respondSuccess(context, "Plot departure message set to '" + departureMessage + "'!");
+        CommandUtil.translatableSuccess(
+                context,
+                "commands.wideplots.response.settings.set.generic_x",
+                Component.translatable("commands.wideplots.response.settings.departure_message").getString(),
+                departureMessage
+        );
         return 1;
     }
 }

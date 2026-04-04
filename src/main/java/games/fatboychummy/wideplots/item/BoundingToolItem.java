@@ -45,7 +45,10 @@ public class BoundingToolItem extends Item {
         ItemStack stack = context.getItemInHand();
         CompoundTag tag = stack.getTag();
         if (tag == null || !tag.contains(PlotPermissionsGetBoundingToolCommand.BOUNDING_TOOL_TAG_NAME)) {
-            ItemUtil.sendError(context, "You must use '/plot permissions getBoundingTool <permissionSetName>' to use this item.");
+            ItemUtil.translatableError(
+                    context,
+                    "item.wideplots.bounding_tool.use_command"
+            );
             return InteractionResult.FAIL;
         }
         String setName = tag.getString(PlotPermissionsGetBoundingToolCommand.BOUNDING_TOOL_TAG_NAME);
@@ -53,27 +56,39 @@ public class BoundingToolItem extends Item {
         // Check the block is within a plot.
         PlotStorage plot = PlotStorageHandler.getPlot(pos.getX(), pos.getZ());
         if (plot == null || !PlotUtility.isActuallyInBounds(pos)) {
-            ItemUtil.sendError(context, "This block is not within a plot.");
+            ItemUtil.translatableError(
+                    context,
+                    "item.wideplots.bounding_tool.not_in_plot"
+            );
             return InteractionResult.FAIL;
         }
 
         // Check the player has permission to do this in this plot.
         if (plot.getPermissions().getActionResult(player.getStringUUID(),  PlotActionType.INTERACT, null, pos) != PlotPermission.GRANT) {
-            ItemUtil.sendError(context, "You do not have permission to interact with this block.");
+            ItemUtil.translatableError(
+                    context,
+                    "item.wideplots.bounding_tool.no_permission"
+            );
             return InteractionResult.FAIL;
         }
 
         // Check the permission set still exists.
         PlotPermissionSet set = plot.getPermissions().getPermissionSet(setName);
         if (set == null) {
-            ItemUtil.sendError(context, "The permission set associated with this item no longer exists.");
+            ItemUtil.translatableError(
+                    context,
+                    "item.wideplots.bounding_tool.bad_permission_set"
+            );
             return InteractionResult.FAIL;
         }
 
         // If they player crouch-rightclicks, clear the selection.
         if (player.isCrouching()) {
             BounderHandler.removeBounder(player.getStringUUID());
-            ItemUtil.sendMessage(context, "Cleared bounding box selection.");
+            ItemUtil.translatableMessage(
+                    context,
+                    "item.wideplots.bounding_tool.cleared"
+            );
             return InteractionResult.FAIL;
         }
 
@@ -84,11 +99,18 @@ public class BoundingToolItem extends Item {
         // Handle the bounding box selection.
         Bounder result = BounderHandler.hit(player.getStringUUID(), pos);
         if (result == null) {
-            ItemUtil.sendMessage(context, "Set the first position of the bounding box.");
+            ItemUtil.translatableMessage(
+                    context,
+                    "item.wideplots.bounding_tool.pos1"
+            );
             return InteractionResult.sidedSuccess(player.level().isClientSide);
         }
 
-        ItemUtil.sendMessage(context, "Set the second position of the bounding box. Applied bounding box to permission set " + setName + "!");
+        ItemUtil.translatableMessage(
+                context,
+                "item.wideplots.bounding_tool.pos2",
+                setName
+        );
         set.setBoundingBox(result.getBoundingBox());
         return InteractionResult.sidedSuccess(player.level().isClientSide);
     }

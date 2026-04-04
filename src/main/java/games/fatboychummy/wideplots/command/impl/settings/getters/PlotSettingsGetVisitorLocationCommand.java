@@ -20,7 +20,11 @@ public class PlotSettingsGetVisitorLocationCommand {
 
         if (CommandUtil.blockedByPermissions(context, plot, PlotActionType.SETTINGS)) {return 0;}
 
-        CommandUtil.respondSuccess(context, "Visitor spawn location: " + real.getX() + ", " + real.getY() + ", " + real.getZ());
+        CommandUtil.translatableSuccess(
+                context,
+                "commands.wideplots.response.settings.get.visitor_location",
+                real.getX(), real.getY(), real.getZ()
+        );
         return 1;
     }
 }

@@ -7,6 +7,7 @@ import games.fatboychummy.wideplots.world.plot.permissions.PlotActionType;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorage;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorageHandler;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
 
 public class PlotSettingsGetDepartureMessageCommand {
     public static int execute(CommandContext<CommandSourceStack> context) {
@@ -16,7 +17,12 @@ public class PlotSettingsGetDepartureMessageCommand {
 
         if (CommandUtil.blockedByPermissions(context, plot, PlotActionType.SETTINGS)) {return 0;}
 
-        CommandUtil.respondSuccess(context, "The departure message of this plot is '" + plot.getDepartureMessage() + "'.");
+        CommandUtil.translatableSuccess(
+                context,
+                "commands.wideplots.response.settings.get.generic_x",
+                Component.translatable("commands.wideplots.response.settings.departure_message").getString(),
+                plot.getDepartureMessage()
+        );
         return 1;
     }
 }

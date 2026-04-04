@@ -7,6 +7,7 @@ import games.fatboychummy.wideplots.world.plot.permissions.PlotActionType;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorage;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorageHandler;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
 
 public class PlotSettingsSetWelcomeMessageCommand {
     public static int execute(CommandContext<CommandSourceStack> context) {
@@ -18,12 +19,22 @@ public class PlotSettingsSetWelcomeMessageCommand {
         if (CommandUtil.blockedByPermissions(context, plot, PlotActionType.SETTINGS)) {return 0;}
 
         if (welcomeMessage.length() > PlotStorage.WELCOME_MESSAGE_MAX_LENGTH) {
-            CommandUtil.respondFailure(context, "Plot welcome message cannot be longer than " + PlotStorage.WELCOME_MESSAGE_MAX_LENGTH + " characters.");
+            CommandUtil.translatableFailure(
+                    context,
+                    "commands.wideplots.response.settings.set.x_too_long",
+                    Component.translatable("commands.wideplots.response.settings.welcome_message").getString(),
+                    PlotStorage.WELCOME_MESSAGE_MAX_LENGTH
+            );
             return 0;
         }
 
         plot.setWelcomeMessage(welcomeMessage);
-        CommandUtil.respondSuccess(context, "Plot welcome message set to '" + welcomeMessage + "'!");
+        CommandUtil.translatableSuccess(
+                context,
+                "commands.wideplots.response.settings.set.generic_x",
+                Component.translatable("commands.wideplots.response.settings.welcome_message").getString(),
+                welcomeMessage
+        );
         return 1;
     }
 }
