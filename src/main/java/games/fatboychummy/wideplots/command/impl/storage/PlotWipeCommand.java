@@ -27,15 +27,25 @@ public class PlotWipeCommand {
         String playerUUID = player.getStringUUID();
 
         if (TimedRequestHelper.isAlive(COMMAND_NAME, playerUUID)) {
-            CommandUtil.respondSuccess(context, "Plot wipe has been queued.");
+            CommandUtil.translatableSuccess(
+                    context,
+                    "commands.wideplots.response.storage.wipe.queued"
+            );
             TimedRequestHelper.cancel(COMMAND_NAME, playerUUID);
             plot.wipe();
         } else {
-            CommandUtil.respondSuccess(context, "Are you sure you want to wipe your plot? If so, please resend the command within the next " + (WIPE_RESEND_TICKS / 20) + " seconds to confirm.");
+            CommandUtil.translatableSuccess(
+                    context,
+                    "commands.wideplots.response.generic.resend_can_wipe",
+                    WIPE_RESEND_TICKS / 20
+            );
             TimedRequestHelper.timedRequest(
                     COMMAND_NAME,
                     playerUUID,
-                    new TimedRequest(WIPE_RESEND_TICKS, () -> CommandUtil.respondFailure(context, "Plot wipe request expired."))
+                    new TimedRequest(WIPE_RESEND_TICKS, () -> CommandUtil.translatableFailure(
+                            context,
+                            "commands.wideplots.response.storage.wipe.expired"
+                    ))
             );
         }
 

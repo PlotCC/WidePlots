@@ -1,6 +1,14 @@
 {
   "item.wideplots.bounding_tool": "Bounding Tool",
 
+  "item.wideplots.bounding_tool.use_command": "You must use '/plot permissions getBoundingTool <permissionSetName>' to use this item.",
+  "item.wideplots.bounding_tool.not_in_plot": "This block is not within a plot.",
+  "item.wideplots.bounding_tool.no_permission": "You do not have permission to interact with this block.",
+  "item.wideplots.bounding_tool.bad_permission_set": "The permission set associated with this item no longer exists.",
+  "item.wideplots.bounding_tool.cleared": "Cleared bounding box selection.",
+  "item.wideplots.bounding_tool.pos1": "Set the first position of the bounding box.",
+  "item.wideplots.bounding_tool.pos2": "Set the second position of the bounding box. Applied bounding box to permission set '%s'!",
+
   "commands.wideplots.response.default_error": "An unknown error occurred.",
 
   "commands.wideplots.response.generic.player": "player",
@@ -31,6 +39,15 @@
   "commands.wideplots.response.permissions.set_creation_failed": "Failed to create permission set '%s'!",
   "commands.wideplots.response.permissions.set_exists": "A permission set with that name already exists.",
   "commands.wideplots.response.permissions.deleted_set": "Permission set deleted.",
+
+  "commands.wideplots.response.kick.kicked": "Kicked %s from the plot!",
+  "commands.wideplots.response.kick.not_in_plot": "That player is not in your plot!",
+
+  "commands.wideplots.response.tp.tp.not_loaded": "Plot dimension is not loaded!",
+  "commands.wideplots.response.tp.tp.teleported": "Teleported you to the plot dimension!",
+
+  "commands.wideplots.response.storage.wipe.queued": "Plot wipe has been queued.",
+  "commands.wideplots.response.storage.wipe.expired": "Plot wipe request expired.",
 
   "commands.wideplots.response.permissions.list.sets": "Permission sets:",
   "commands.wideplots.response.permissions.list.none": "No permission sets found.",

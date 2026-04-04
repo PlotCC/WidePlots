@@ -26,14 +26,21 @@ public class PlotKickCommand {
         if (plot.equals(targetPlot) && PlotUtility.isActuallyInBounds(targetPos)) {
             // Send the target player to the plot dimension spawn.
             target.teleportTo(PlotDimension.PLOTDIM_LEVEL, PlotDimension.PLOTDIM_SPAWN.getX(), PlotDimension.PLOTDIM_SPAWN.getY(), PlotDimension.PLOTDIM_SPAWN.getZ(), target.getYRot(), target.getXRot());
-            CommandUtil.respondSuccess(context, "Kicked " + target.getName().getString() + " from the plot!");
+            CommandUtil.translatableSuccess(
+                    context,
+                    "commands.wideplots.response.kick.kicked",
+                    target.getName().getString()
+            );
             return 1;
         }
 
         // If this is being called from `/plot ban`, don't send a failure message since the player is being banned anyway.
         // Otherwise, send it.
         if (context.getNodes().stream().noneMatch(node -> node.getNode().getName().equals("ban"))) {
-            CommandUtil.respondFailure(context, "That player is not in your plot!");
+            CommandUtil.translatableFailure(
+                    context,
+                    "commands.wideplots.response.kick.not_in_plot"
+            );
             return 0;
         }
         return 1;
