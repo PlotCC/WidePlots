@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class TimedRequestHelper {
-    private static Map<String, Map<String, TimedRequest>> requests = new HashMap<>();
+    private static final Map<String, Map<String, TimedRequest>> requests = new HashMap<>();
 
     public static void tick(MinecraftServer server) {
         for (Map.Entry<String, Map<String, TimedRequest>> mapEntry : requests.entrySet()) {
@@ -49,6 +49,6 @@ public class TimedRequestHelper {
     }
 
     public static void init() {
-        ServerTickEvents.END_SERVER_TICK.register(CommandUtil::tick);
+        ServerTickEvents.END_SERVER_TICK.register(TimedRequestHelper::tick);
     }
 }

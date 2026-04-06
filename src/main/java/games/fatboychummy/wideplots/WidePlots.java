@@ -1,6 +1,7 @@
 package games.fatboychummy.wideplots;
 
 import com.mojang.logging.LogUtils;
+import games.fatboychummy.wideplots.block.ModBlocks;
 import games.fatboychummy.wideplots.command.PlotCommands;
 import games.fatboychummy.wideplots.debug.DebugCommands;
 import games.fatboychummy.wideplots.item.ModItems;
@@ -36,6 +37,7 @@ public class WidePlots implements ModInitializer {
 
         // Load blocks and structures
         ModItems.registerModItems();
+        ModBlocks.registerModBlocks();
         PlotStructures.init();
         DebugCommands.init();
 
