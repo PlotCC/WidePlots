@@ -18,7 +18,7 @@ public class PlotBanCommand {
         if (CommandUtil.shouldBlock(context, PermissionLevel.ALL)) {return 0;}
         if (CommandUtil.blockNonOwner(context)) {return 0;}
 
-        PlotStorage plot = PlotStorageHandler.getPlot(context.getSource().getPlayer());
+        PlotStorage plot = PlotStorageHandler.getPlot(CommandUtil.requirePlayer(context));
         GameProfile playerToBan = context.getArgument("player", GameProfile.class);
         PlotPermissionSet set = getOrCreateBannedSet(context, plot);
         if (set == null) {

@@ -15,7 +15,7 @@ public class PlotPermissionsUpdateSetRemoveBlockCommand {
         if (CommandUtil.shouldBlock(context, PermissionLevel.ALL)) {return 0;}
         if (CommandUtil.blockNonOwner(context)) {return 0;}
 
-        PlotStorage plot = PlotStorageHandler.getPlot(context.getSource().getPlayer());
+        PlotStorage plot = PlotStorageHandler.getPlot(CommandUtil.requirePlayer(context));
         ResourceLocation block = context.getArgument("block", ResourceLocation.class);
         String setName = context.getArgument("name", String.class);
         PlotPermissionSet set = plot.getPermissions().getPermissionSet(setName);

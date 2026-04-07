@@ -12,7 +12,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Style;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 
@@ -23,7 +22,7 @@ public class PlotPermissionsGetBoundingToolCommand {
         if (CommandUtil.shouldBlock(context, PermissionLevel.ALL)) {return 0;}
         if (CommandUtil.blockNonOwner(context)) {return 0;}
 
-        ServerPlayer player = context.getSource().getPlayer();
+        ServerPlayer player = CommandUtil.requirePlayer(context);
         PlotStorage plot = PlotStorageHandler.getPlot(player);
         String setName = context.getArgument("name", String.class);
         PlotPermissionSet set = plot.getPermissions().getPermissionSet(setName);

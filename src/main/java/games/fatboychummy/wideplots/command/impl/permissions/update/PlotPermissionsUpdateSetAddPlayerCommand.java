@@ -19,7 +19,7 @@ public class PlotPermissionsUpdateSetAddPlayerCommand {
         if (CommandUtil.shouldBlock(context, PermissionLevel.ALL)) {return 0;}
         if (CommandUtil.blockNonOwner(context)) {return 0;}
 
-        PlotStorage plot = PlotStorageHandler.getPlot(context.getSource().getPlayer());
+        PlotStorage plot = PlotStorageHandler.getPlot(CommandUtil.requirePlayer(context));
         Collection<GameProfile> playersToAdd;
         try {
             playersToAdd = GameProfileArgument.getGameProfiles(context, "player");

@@ -7,7 +7,6 @@ import games.fatboychummy.wideplots.world.plot.permissions.PlotActionType;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorage;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorageHandler;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.GameType;
 
@@ -15,7 +14,7 @@ public class PlotSettingsSetGamemodeCommand {
     public static int execute(CommandContext<CommandSourceStack> context) {
         if (CommandUtil.shouldBlock(context, PermissionLevel.ALL)) {return 0;}
 
-        PlotStorage plot = PlotStorageHandler.getPlot(context.getSource().getPlayer());
+        PlotStorage plot = PlotStorageHandler.getPlot(CommandUtil.requirePlayer(context));
 
         if (CommandUtil.blockedByPermissions(context, plot, PlotActionType.SETTINGS)) {return 0;}
 

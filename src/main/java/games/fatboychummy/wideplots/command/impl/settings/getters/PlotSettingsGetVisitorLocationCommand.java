@@ -13,7 +13,7 @@ public class PlotSettingsGetVisitorLocationCommand {
     public static int execute(CommandContext<CommandSourceStack> context) {
         if (CommandUtil.shouldBlock(context, PermissionLevel.ALL)) {return 0;}
 
-        PlotStorage plot = PlotStorageHandler.getPlot(context.getSource().getPlayer());
+        PlotStorage plot = PlotStorageHandler.getPlot(CommandUtil.requirePlayer(context));
         BlockPos offset = plot.getVisitorSpawnOffset();
         BlockPos center = plot.getPlotCenter();
         BlockPos real = center.offset(offset);

@@ -26,7 +26,7 @@ public class PlotPermissionsListSetsCommand {
             server = context.getSource().getServer();
         }
 
-        PlotStorage plot = PlotStorageHandler.getPlot(context.getSource().getPlayer());
+        PlotStorage plot = PlotStorageHandler.getPlot(CommandUtil.requirePlayer(context));
 
         StringBuilder builder = new StringBuilder();
         builder.append(Component.translatable("commands.wideplots.response.permissions.list.sets").getString());

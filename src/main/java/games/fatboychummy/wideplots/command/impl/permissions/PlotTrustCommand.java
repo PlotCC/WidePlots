@@ -10,7 +10,6 @@ import games.fatboychummy.wideplots.world.plot.permissions.PlotPermissionSet;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorage;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorageHandler;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
 public class PlotTrustCommand {
@@ -18,7 +17,7 @@ public class PlotTrustCommand {
         if (CommandUtil.shouldBlock(context, PermissionLevel.ALL)) {return 0;}
         if (CommandUtil.blockNonOwner(context)) {return 0;}
 
-        PlotStorage plot = PlotStorageHandler.getPlot(context.getSource().getPlayer());
+        PlotStorage plot = PlotStorageHandler.getPlot(CommandUtil.requirePlayer(context));
         GameProfile playerToAdd = context.getArgument("player", GameProfile.class);
         PlotPermissionSet set = getOrCreateTrustedSet(context, plot);
         if (set == null) {

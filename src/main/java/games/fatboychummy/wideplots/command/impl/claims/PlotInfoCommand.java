@@ -12,7 +12,7 @@ import net.minecraft.server.level.ServerPlayer;
 public class PlotInfoCommand {
     public static int execute(CommandContext<CommandSourceStack> context) {
         if (CommandUtil.shouldBlock(context, PermissionLevel.ALL)) {return 0;}
-        ServerPlayer player = context.getSource().getPlayer();
+        ServerPlayer player = CommandUtil.requirePlayer(context);
 
         // Get information about the current plot.
         PlotStorage storage = PlotStorageHandler.getPlot(player);
@@ -21,7 +21,7 @@ public class PlotInfoCommand {
     }
 
     private static String formatPlotInfo(CommandContext<CommandSourceStack> context, PlotStorage storage) {
-        ServerPlayer player = context.getSource().getPlayer();
+        ServerPlayer player = CommandUtil.requirePlayer(context);
         StringBuilder builder = new StringBuilder("Name: " + storage.getName() + "\n" +
                 "Owner: " + storage.getOwnerUUID() + "\n" +
                 "Plot Coordinates: (" + storage.getX() + ", " + storage.getZ() + ")\n" +
@@ -40,7 +40,7 @@ public class PlotInfoCommand {
         }
 
         return builder.toString();
-    };
+    }
 
 
     private static String getActionName(PlotActionType actionType) {

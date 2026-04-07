@@ -20,7 +20,7 @@ public class PlotPermissionsUpdateSetRemovePlayerCommand {
         if (CommandUtil.blockNonOwner(context)) {return 0;}
 
         WidePlots.LOGGER.info("Executing command to add player to permission set...");
-        PlotStorage plot = PlotStorageHandler.getPlot(context.getSource().getPlayer());
+        PlotStorage plot = PlotStorageHandler.getPlot(CommandUtil.requirePlayer(context));
         Collection<GameProfile> playersToRemove;
         try {
             playersToRemove = GameProfileArgument.getGameProfiles(context, "player");

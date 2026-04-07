@@ -8,7 +8,6 @@ import games.fatboychummy.wideplots.util.TimedRequest;
 import games.fatboychummy.wideplots.util.TimedRequestHelper;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorageHandler;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
 public class PlotForceUnclaimCommand {
@@ -19,7 +18,7 @@ public class PlotForceUnclaimCommand {
         // Check that the caller is a player, that they're in the plot dimension, and that they have admin permissions.
         if (CommandUtil.shouldBlock(context, PermissionLevel.ADMIN)) {return 0;}
 
-        ServerPlayer player = context.getSource().getPlayer();
+        ServerPlayer player = CommandUtil.requirePlayer(context);
         String playerUUID = player.getStringUUID();
 
         if (!PlotUtility.isActuallyInBounds(player.getOnPos())) {

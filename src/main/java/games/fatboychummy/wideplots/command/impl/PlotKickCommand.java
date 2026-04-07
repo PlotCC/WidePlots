@@ -14,7 +14,7 @@ import net.minecraft.server.level.ServerPlayer;
 public class PlotKickCommand {
     public static int execute(CommandContext<CommandSourceStack> context) {
         if (CommandUtil.shouldBlock(context, PermissionLevel.ALL)) {return 0;}
-        ServerPlayer player = context.getSource().getPlayer();
+        ServerPlayer player = CommandUtil.requirePlayer(context);
         ServerPlayer target = context.getArgument("player", ServerPlayer.class);
 
         // Get the current player's plot.

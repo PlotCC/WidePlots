@@ -6,7 +6,6 @@ import games.fatboychummy.wideplots.util.CommandUtil;
 import games.fatboychummy.wideplots.util.PlotUtility;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorageHandler;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
 public class PlotForceClaimCommand {
@@ -16,7 +15,7 @@ public class PlotForceClaimCommand {
 
         ServerPlayer player;
         ServerPlayer target = context.getArgument("player", ServerPlayer.class);
-        player = target != null ? target : context.getSource().getPlayer();
+        player = target != null ? target : CommandUtil.requirePlayer(context);
 
         if (!PlotUtility.isActuallyInBounds(player.blockPosition())) {
             CommandUtil.translatableFailure(context, "commands.wideplots.response.generic.not_in_plot");

@@ -1,5 +1,6 @@
 package games.fatboychummy.wideplots.util;
 
+import com.demonwav.mcdev.annotations.Translatable;
 import com.mojang.brigadier.context.CommandContext;
 import games.fatboychummy.wideplots.command.PermissionLevel;
 import games.fatboychummy.wideplots.world.PlotDimension;
@@ -97,8 +98,9 @@ public class CommandUtil {
     public static boolean shouldBlock(CommandContext<CommandSourceStack> context, PermissionLevel permissionLevel) {
         if (!checkPermission(context, permissionLevel)) {return true;}
         if (!isPlayer(context)) {return true;}
-        if (!inPlotDimension(context)) {return true;}
-        return false;
+        //if (!inPlotDimension(context)) {return true;}
+        //return false;
+        return !inPlotDimension(context);
     }
 
     /**
@@ -119,7 +121,11 @@ public class CommandUtil {
         context.getSource().sendSystemMessage(message);
     }
 
-    public static void translatableSuccess(CommandContext<CommandSourceStack> context, String key, Object... args) {
+    public static void translatableSuccess(
+            CommandContext<CommandSourceStack> context,
+            @Translatable(foldMethod = true) String key,
+            Object... args
+    ) {
         context.getSource().sendSystemMessage(Component.translatable(key, args));
     }
 
@@ -135,7 +141,7 @@ public class CommandUtil {
 
     public static void translatableFailure(
             CommandContext<CommandSourceStack> context,
-            String key,
+            @Translatable(foldMethod = true) String key,
             Object... args
     ) {
         context.getSource().sendSystemMessage(Component.translatable(key, args)
@@ -197,5 +203,11 @@ public class CommandUtil {
         return false;
     }
 
-
+    public static ServerPlayer requirePlayer(CommandContext<CommandSourceStack> context) {
+        ServerPlayer player = context.getSource().getPlayer();
+        if (player == null) {
+            throw new IllegalStateException("Player is null");
+        }
+        return player;
+    }
 }

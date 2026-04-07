@@ -101,8 +101,8 @@
   "commands.wideplots.response.set.permission": "Set permission '%s' to %s for permission set %s!",
   "commands.wideplots.response.set.reorganized": "Set priority of %s to %d",
 
-  "commands.wideplots.response.blacklist.enabled": "Permission set %s is now using a blacklist for %s.",
-  "commands.wideplots.response.blacklist.disabled": "Permission set %s is now using a whitelist for %s.",
+  "commands.wideplots.response.blacklist.enabled": "Permission set %s is now using a blacklist for %ss.",
+  "commands.wideplots.response.blacklist.disabled": "Permission set %s is now using a whitelist for %ss.",
 
   "commands.wideplots.response.claim.already_claimed": "This plot is already claimed by %s.",
   "commands.wideplots.response.claim.success": "Plot claimed successfully!",

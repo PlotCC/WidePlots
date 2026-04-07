@@ -13,7 +13,7 @@ public class PlotSettingsSetNameCommand {
     public static int execute(CommandContext<CommandSourceStack> context) {
         if (CommandUtil.shouldBlock(context, PermissionLevel.ALL)) {return 0;}
 
-        PlotStorage plot = PlotStorageHandler.getPlot(context.getSource().getPlayer());
+        PlotStorage plot = PlotStorageHandler.getPlot(CommandUtil.requirePlayer(context));
         String name = context.getArgument("name", String.class);
 
         if (CommandUtil.blockedByPermissions(context, plot, PlotActionType.SETTINGS)) {return 0;}

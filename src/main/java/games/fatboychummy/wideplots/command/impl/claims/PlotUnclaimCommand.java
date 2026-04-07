@@ -9,7 +9,6 @@ import games.fatboychummy.wideplots.world.plot.storage.PlotStorage;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorageHandler;
 import games.fatboychummy.wideplots.world.plot.storage.SoftErrorState;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
 public class PlotUnclaimCommand {
@@ -19,7 +18,7 @@ public class PlotUnclaimCommand {
     public static int execute(CommandContext<CommandSourceStack> context) {
         if (CommandUtil.shouldBlock(context, PermissionLevel.ALL)) {return 0;}
 
-        ServerPlayer player = context.getSource().getPlayer();
+        ServerPlayer player = CommandUtil.requirePlayer(context);
         String playerUUID = player.getStringUUID();
         PlotStorage plot = PlotStorageHandler.getPlot(player);
         if (TimedRequestHelper.isAlive(COMMAND_NAME, playerUUID)) {

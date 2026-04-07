@@ -11,7 +11,7 @@ import net.minecraft.server.level.ServerPlayer;
 public class PlotTpCommand {
     public static int execute(CommandContext<CommandSourceStack> context) {
         if (CommandUtil.shouldBlock(context, PermissionLevel.ALL)) {return 0;}
-        ServerPlayer player = context.getSource().getPlayer();
+        ServerPlayer player = CommandUtil.requirePlayer(context);
 
         if (PlotDimension.PLOTDIM_LEVEL == null) {
             CommandUtil.respondFailure(

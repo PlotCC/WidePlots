@@ -7,14 +7,14 @@ import games.fatboychummy.wideplots.world.plot.permissions.PlotPermissionSet;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorage;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorageHandler;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.Component;
 
 public class PlotPermissionsUpdateSetSetPlayerWhitelistCommand {
     public static int execute(CommandContext<CommandSourceStack> context) {
         if (CommandUtil.shouldBlock(context, PermissionLevel.ALL)) {return 0;}
         if (CommandUtil.blockNonOwner(context)) {return 0;}
 
-        PlotStorage plot = PlotStorageHandler.getPlot(context.getSource().getPlayer());
+        PlotStorage plot = PlotStorageHandler.getPlot(CommandUtil.requirePlayer(context));
         String setName = context.getArgument("name", String.class);
         PlotPermissionSet set = plot.getPermissions().getPermissionSet(setName);
 
@@ -25,7 +25,12 @@ public class PlotPermissionsUpdateSetSetPlayerWhitelistCommand {
 
         // Use a whitelist.
         set.setPlayerBlacklist(false);
-        CommandUtil.translatableSuccess(context, "commands.wideplots.response.blacklist.disabled", setName);
+        CommandUtil.translatableSuccess(
+                context,
+                "commands.wideplots.response.blacklist.disabled",
+                setName,
+                Component.translatable("commands.wideplots.response.generic.player")
+        );
         return 1;
     }
 }

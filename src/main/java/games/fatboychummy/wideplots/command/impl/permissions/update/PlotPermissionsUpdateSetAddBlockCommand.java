@@ -1,6 +1,5 @@
 package games.fatboychummy.wideplots.command.impl.permissions.update;
 
-import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.context.CommandContext;
 import games.fatboychummy.wideplots.command.PermissionLevel;
 import games.fatboychummy.wideplots.util.CommandUtil;
@@ -16,7 +15,7 @@ public class PlotPermissionsUpdateSetAddBlockCommand {
         if (CommandUtil.shouldBlock(context, PermissionLevel.ALL)) {return 0;}
         if (CommandUtil.blockNonOwner(context)) {return 0;}
 
-        PlotStorage plot = PlotStorageHandler.getPlot(context.getSource().getPlayer());
+        PlotStorage plot = PlotStorageHandler.getPlot(CommandUtil.requirePlayer(context));
         ResourceLocation block = context.getArgument("block", ResourceLocation.class);
         String setName = context.getArgument("name", String.class);
         PlotPermissionSet set = plot.getPermissions().getPermissionSet(setName);

@@ -22,7 +22,7 @@ public class PlotWipeCommand {
         if (CommandUtil.shouldBlock(context, PermissionLevel.ALL)) {return 0;}
         if (CommandUtil.blockNonOwner(context)) {return 0;}
 
-        ServerPlayer player = context.getSource().getPlayer();
+        ServerPlayer player = CommandUtil.requirePlayer(context);
         PlotStorage plot = PlotStorageHandler.getPlot(player);
         String playerUUID = player.getStringUUID();
 
