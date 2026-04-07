@@ -1,5 +1,6 @@
 package games.fatboychummy.wideplots.world.plot.permissions;
 
+import com.demonwav.mcdev.annotations.Translatable;
 import games.fatboychummy.wideplots.WidePlots;
 import games.fatboychummy.wideplots.util.PlotUtility;
 import games.fatboychummy.wideplots.world.generation.PlotChunkGenerator;
@@ -60,10 +61,10 @@ public class PlotPermissionHandler {
                     );
 
                     if (result != PlotPermission.GRANT) {
-                        tellPlayerDisallowedAction(
+                        tellPlayerDisallowedActionC(
                                 player,
                                 PlotActionType.BUILD,
-                                PlotUtility.isActuallyInBounds(pos) ? "You do not own this plot." : "You may not alter the roads."
+                                PlotUtility.isActuallyInBounds(pos) ? Component.translatable("permissions.wideplots.action.disallowed.build.plot") : Component.translatable("permissions.wideplots.action.disallowed.build.road")
                         );
                     }
 
@@ -97,6 +98,14 @@ public class PlotPermissionHandler {
                                         )
                         );
 
+                        if (result != PlotPermission.GRANT) {
+                            tellPlayerDisallowedAction(
+                                    player,
+                                    PlotActionType.BUILD,
+                                    null
+                            );
+                        }
+
                         return result == PlotPermission.GRANT ? InteractionResult.PASS : InteractionResult.FAIL;
                     }
 
@@ -116,6 +125,14 @@ public class PlotPermissionHandler {
                                             pos
                                         )
                         );
+
+                        if (result != PlotPermission.GRANT) {
+                            tellPlayerDisallowedAction(
+                                    player,
+                                    PlotActionType.ACCESS,
+                                    null
+                            );
+                        }
 
                         return result == PlotPermission.GRANT ? InteractionResult.PASS : InteractionResult.FAIL;
                     }
@@ -178,6 +195,14 @@ public class PlotPermissionHandler {
                                     )
                     );
 
+                    if (result != PlotPermission.GRANT) {
+                        tellPlayerDisallowedAction(
+                                player,
+                                PlotActionType.ACCESS,
+                                null
+                        );
+                    }
+
                     return result == PlotPermission.GRANT ? InteractionResultHolder.pass(itemStack): InteractionResultHolder.fail(itemStack);
                 }
         );
@@ -226,31 +251,45 @@ public class PlotPermissionHandler {
      * Tells a player that the action they've done is not allowed.
      * @param player The player to tell.
      * @param actionType The PlotActionType they performed.
-     * @param message An optional additional message to tack on.
+     * @param message An optional additional message to tack on, as a direct string.
      */
     private static void tellPlayerDisallowedAction(Player player, PlotActionType actionType, @Nullable String message) {
-        String actionMessage = "You cannot do that";
+        String actionKey = "permissions.wideplots.action.disallowed.default";
         switch (actionType) {
-            case PVE, PVP -> actionMessage = "You may not attack here";
-            case BUILD -> actionMessage = "You cannot build here";
-            case ENTER -> actionMessage = "You cannot enter this location";
-            case SET_HOME -> actionMessage = "You cannot set a home in this location";
-            case SETTINGS -> actionMessage = "You cannot change the settings of this plot.";
+            case PVE, PVP -> actionKey = "permissions.wideplots.action.disallowed.pvepvp";
+            case BUILD -> actionKey = "permissions.wideplots.action.disallowed.build";
+            case ENTER -> actionKey = "permissions.wideplots.action.disallowed.enter";
+            case SET_HOME -> actionKey = "permissions.wideplots.action.disallowed.set_home";
+            case SETTINGS -> actionKey = "permissions.wideplots.action.disallowed.settings";
+            case ACCESS -> actionKey = "permissions.wideplots.action.disallowed.access";
+            case INTERACT -> actionKey = "permissions.wideplots.action.disallowed.interact";
+            case PISTONS -> actionKey = "permissions.wideplots.action.disallowed.pistons";
         }
 
         Style style = Style.EMPTY.withColor(TextColor.fromRgb(0xff5555));
 
         if (message == null) {
             player.sendSystemMessage(
-                    Component.literal(actionMessage + ".")
+                    Component.translatable(actionKey)
                             .withStyle(style)
             );
             return;
         }
 
         player.sendSystemMessage(
-                Component.literal(actionMessage + ": " + message)
+                Component.translatable(actionKey)
+                        .append(Component.literal("\n  " + message))
                         .withStyle(style)
         );
+    }
+
+    /**
+     * Tells a player that the action they've done is not allowed.
+     * @param player The player to tell.
+     * @param actionType The PlotActionType they performed.
+     * @param message An optional additional message to tack on, as a component.
+     */
+    private static void tellPlayerDisallowedActionC(Player player, PlotActionType actionType, Component message) {
+        tellPlayerDisallowedAction(player, actionType, message.getString());
     }
 }

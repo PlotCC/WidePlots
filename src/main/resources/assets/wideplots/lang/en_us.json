@@ -1,4 +1,17 @@
 {
+  "permissions.wideplots.action.disallowed.pvepvp": "You cannot not attack here.",
+  "permissions.wideplots.action.disallowed.build": "You cannot build here.",
+  "permissions.wideplots.action.disallowed.enter": "You cannot enter this location.",
+  "permissions.wideplots.action.disallowed.set_home": "You cannot set a home in this location.",
+  "permissions.wideplots.action.disallowed.settings": "You cannot change the settings of this plot.",
+  "permissions.wideplots.action.disallowed.access": "You cannot access this block.",
+  "permissions.wideplots.action.disallowed.interact": "You cannot interact with this block.",
+  "permissions.wideplots.action.disallowed.pistons": "One of your pistons are committing felonies.",
+  "permissions.wideplots.action.disallowed.default": "You cannot do that.",
+
+  "permissions.wideplots.action.disallowed.build.plot": "You do not own this plot.",
+  "permissions.wideplots.action.disallowed.build.road": "You cannot alter the roads.",
+
   "item.wideplots.bounding_tool": "Bounding Tool",
 
   "item.wideplots.bounding_tool.use_command": "You must use '/plot permissions getBoundingTool <permissionSetName>' to use this item.",

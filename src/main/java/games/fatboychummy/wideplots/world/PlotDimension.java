@@ -77,8 +77,8 @@ public class PlotDimension {
             true, // Bed works - players can set spawn
             false, // Respawn anchor works - false like Overworld (true = Nether)
             -64, // Min Y - same as Overworld
-            320, // Height - same as Overworld (min Y + height = max Y of 256)
-            320, // Logical height - same as Overworld
+            384, // Height - same as Overworld
+            384, // Logical height - same as Overworld
             BlockTags.INFINIBURN_OVERWORLD, // Infiniburn block tag
             new ResourceLocation("minecraft:overworld"), // Use overworld effects (sky, fog, etc.)
             0.0f, // Ambient light - 0.0 = dark at night like Overworld
