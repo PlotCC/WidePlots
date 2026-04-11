@@ -25,6 +25,9 @@ public class PlotCommands {
     public static void init() {
         // Prepare any commands that need preparation before registration.
         PlotWipeCommand.init();
+        PlotForceUnclaimCommand.init();
+        PlotUnclaimCommand.init();
+        PlotLoadCommand.init();
 
         // Register all commands.
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {

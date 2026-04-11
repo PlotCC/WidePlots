@@ -14,6 +14,10 @@ public class PlotForceUnclaimCommand {
     private static final String COMMAND_NAME = "force_unclaim";
     private static final int COMMAND_TIMEOUT = 20 * 10; // 10 seconds in ticks.
 
+    public static void init() {
+        TimedRequestHelper.registerTimedRequestCommand(COMMAND_NAME);
+    }
+
     public static int execute(CommandContext<CommandSourceStack> context) {
         // Check that the caller is a player, that they're in the plot dimension, and that they have admin permissions.
         if (CommandUtil.shouldBlock(context, PermissionLevel.ADMIN)) {return 0;}
@@ -28,6 +32,7 @@ public class PlotForceUnclaimCommand {
 
         if (TimedRequestHelper.isAlive(COMMAND_NAME, playerUUID)) {
             PlotStorageHandler.forceUnclaimPlot(player.getBlockX(), player.getBlockZ());
+            TimedRequestHelper.cancel(COMMAND_NAME, playerUUID);
             CommandUtil.translatableSuccess(context, "commands.wideplots.response.force_unclaim.success");
         } else {
             CommandUtil.translatableSuccess(context, "commands.wideplots.response.generic.resend_can_wipe", COMMAND_TIMEOUT / 20);

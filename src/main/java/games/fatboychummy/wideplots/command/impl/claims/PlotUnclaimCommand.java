@@ -15,6 +15,10 @@ public class PlotUnclaimCommand {
     private static final String COMMAND_NAME = "unclaim";
     private static final int TIMEOUT = 20 * 10; // 10 seconds in ticks.
 
+    public static void init() {
+        TimedRequestHelper.registerTimedRequestCommand(COMMAND_NAME);
+    }
+
     public static int execute(CommandContext<CommandSourceStack> context) {
         if (CommandUtil.shouldBlock(context, PermissionLevel.ALL)) {return 0;}
 
@@ -22,6 +26,7 @@ public class PlotUnclaimCommand {
         String playerUUID = player.getStringUUID();
         PlotStorage plot = PlotStorageHandler.getPlot(player);
         if (TimedRequestHelper.isAlive(COMMAND_NAME, playerUUID)) {
+            TimedRequestHelper.cancel(COMMAND_NAME, playerUUID);
             plot.wipe();
             CommandUtil.respondSuccess(context, "Plot wipe queued.");
 

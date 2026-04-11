@@ -27,11 +27,11 @@ public class PlotWipeCommand {
         String playerUUID = player.getStringUUID();
 
         if (TimedRequestHelper.isAlive(COMMAND_NAME, playerUUID)) {
+            TimedRequestHelper.cancel(COMMAND_NAME, playerUUID);
             CommandUtil.translatableSuccess(
                     context,
                     "commands.wideplots.response.storage.wipe.queued"
             );
-            TimedRequestHelper.cancel(COMMAND_NAME, playerUUID);
             plot.wipe();
         } else {
             CommandUtil.translatableSuccess(
