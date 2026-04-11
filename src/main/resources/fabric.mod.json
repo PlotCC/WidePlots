@@ -11,7 +11,7 @@
   "environment": "*",
   "entrypoints": {
     "fabric-datagen": [
-      "games.fatboychummy.wideplots.client.WidePlotsDataGenerator"
+      "games.fatboychummy.wideplots.client.datagen.WPDataGenerator"
     ],
     "client": [
       "games.fatboychummy.wideplots.client.WidePlotsClient"

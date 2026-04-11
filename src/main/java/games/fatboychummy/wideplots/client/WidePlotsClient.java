@@ -4,7 +4,6 @@ import games.fatboychummy.wideplots.WidePlots;
 import games.fatboychummy.wideplots.command.arguments.PlotActionTypeArgument;
 import games.fatboychummy.wideplots.command.arguments.PlotPermissionArgument;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.command.v2.ArgumentTypeRegistry;
 import net.minecraft.commands.synchronization.SingletonArgumentInfo;
 

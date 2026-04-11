@@ -2,7 +2,6 @@ package games.fatboychummy.wideplots.item;
 
 
 import games.fatboychummy.wideplots.WidePlots;
-import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.CreativeModeTab;
@@ -39,8 +38,6 @@ public class ModItems {
 
     public static void registerModItems() {
         WidePlots.LOGGER.info("Registering Mod Items for " + WidePlots.MOD_ID);
-        // TODO: Need to datagen stuff for this item.
-
-
+        // Do I even need this?
     }
 }

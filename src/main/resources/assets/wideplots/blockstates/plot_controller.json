@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "decay=0,facing=north": {"model": "wideplots:block/plot_controller_0"},
+    "decay=0,facing=east": {"model": "wideplots:block/plot_controller_0", "y": 90},
+    "decay=0,facing=south": {"model": "wideplots:block/plot_controller_0", "y": 180},
+    "decay=0,facing=west": {"model": "wideplots:block/plot_controller_0", "y": 270},
+
+    "decay=1,facing=north": {"model": "wideplots:block/plot_controller_1"},
+    "decay=1,facing=east": {"model": "wideplots:block/plot_controller_1", "y": 90},
+    "decay=1,facing=south": {"model": "wideplots:block/plot_controller_1", "y": 180},
+    "decay=1,facing=west": {"model": "wideplots:block/plot_controller_1", "y": 270},
+
+    "decay=2,facing=north": {"model": "wideplots:block/plot_controller_2"},
+    "decay=2,facing=east": {"model": "wideplots:block/plot_controller_2", "y": 90},
+    "decay=2,facing=south": {"model": "wideplots:block/plot_controller_2", "y": 180},
+    "decay=2,facing=west": {"model": "wideplots:block/plot_controller_2", "y": 270},
+
+    "decay=3,facing=north": {"model": "wideplots:block/plot_controller_3"},
+    "decay=3,facing=east": {"model": "wideplots:block/plot_controller_3", "y": 90},
+    "decay=3,facing=south": {"model": "wideplots:block/plot_controller_3", "y": 180},
+    "decay=3,facing=west": {"model": "wideplots:block/plot_controller_3", "y": 270},
+
+    "decay=4,facing=north": {"model": "wideplots:block/plot_controller_4"},
+    "decay=4,facing=east": {"model": "wideplots:block/plot_controller_4", "y": 90},
+    "decay=4,facing=south": {"model": "wideplots:block/plot_controller_4", "y": 180},
+    "decay=4,facing=west": {"model": "wideplots:block/plot_controller_4", "y": 270}
+  }
+}

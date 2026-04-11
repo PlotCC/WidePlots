@@ -13,6 +13,7 @@
   "permissions.wideplots.action.disallowed.build.road": "You cannot alter the roads.",
 
   "item.wideplots.bounding_tool": "Bounding Tool",
+  "block.wideplots.plot_controller": "Plot Controller",
 
   "item.wideplots.bounding_tool.use_command": "You must use '/plot permissions getBoundingTool <permissionSetName>' to use this item.",
   "item.wideplots.bounding_tool.not_in_plot": "This block is not within a plot.",
