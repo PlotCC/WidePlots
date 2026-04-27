@@ -23,6 +23,11 @@
     "decay=4,facing=north": {"model": "wideplots:block/plot_controller_4"},
     "decay=4,facing=east": {"model": "wideplots:block/plot_controller_4", "y": 90},
     "decay=4,facing=south": {"model": "wideplots:block/plot_controller_4", "y": 180},
-    "decay=4,facing=west": {"model": "wideplots:block/plot_controller_4", "y": 270}
+    "decay=4,facing=west": {"model": "wideplots:block/plot_controller_4", "y": 270},
+
+    "decay=5,facing=north": {"model": "wideplots:block/plot_controller_5"},
+    "decay=5,facing=east": {"model": "wideplots:block/plot_controller_5", "y": 90},
+    "decay=5,facing=south": {"model": "wideplots:block/plot_controller_5", "y": 180},
+    "decay=5,facing=west": {"model": "wideplots:block/plot_controller_5", "y": 270}
   }
 }

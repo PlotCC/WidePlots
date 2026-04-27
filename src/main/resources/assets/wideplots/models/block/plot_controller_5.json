@@ -2,12 +2,12 @@
 	"texture_size": [64, 64],
 	"parent": "block/cube",
 	"textures": {
-		"north": "wideplots:block/plot_controller/0/front",
-		"south": "wideplots:block/plot_controller/0/back",
-		"east": "wideplots:block/plot_controller/0/right_side",
-		"west": "wideplots:block/plot_controller/0/left_side",
-		"up": "wideplots:block/plot_controller/0/top",
-		"down": "wideplots:block/plot_controller/0/bottom"
+		"north": "wideplots:block/plot_controller/5/front",
+		"south": "wideplots:block/plot_controller/5/back",
+		"east": "wideplots:block/plot_controller/5/right_side",
+		"west": "wideplots:block/plot_controller/5/left_side",
+		"up": "wideplots:block/plot_controller/5/top",
+		"down": "wideplots:block/plot_controller/5/bottom"
 	},
 	"gui_light": "front",
 	"display": {

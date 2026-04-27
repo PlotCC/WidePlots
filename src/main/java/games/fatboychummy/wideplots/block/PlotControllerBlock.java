@@ -4,6 +4,10 @@ import games.fatboychummy.wideplots.WidePlots;
 import games.fatboychummy.wideplots.block.entity.PlotControllerBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -22,9 +26,13 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Random;
+
 public class PlotControllerBlock extends BaseEntityBlock {
-    public static final IntegerProperty DECAY = IntegerProperty.create("decay", 0, 4);
+    public static final IntegerProperty DECAY = IntegerProperty.create("decay", 0, 5);
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
+    private static final int DECAY_TIME = 20 * 10; // 10 seconds in ticks.
+    private final RandomSource randomSource = RandomSource.create();
 
     public PlotControllerBlock(Properties properties) {
         super(properties);
@@ -33,6 +41,42 @@ public class PlotControllerBlock extends BaseEntityBlock {
                         .setValue(DECAY, 0)
                         .setValue(FACING, Direction.NORTH)
         );
+    }
+
+    @Override
+    public void onPlace(BlockState blockState, Level level, BlockPos blockPos, BlockState blockState2, boolean bl) {
+        super.onPlace(blockState, level, blockPos, blockState2, bl);
+
+        if (!level.isClientSide()) {
+            level.scheduleTick(blockPos, this, DECAY_TIME);
+        }
+    }
+
+    @Override
+    public void animateTick(BlockState blockState, Level level, BlockPos blockPos, RandomSource randomSource) {
+        super.animateTick(blockState, level, blockPos, randomSource);
+
+        if (blockState.getValue(DECAY) == 5) {
+            level.addParticle(
+                    ParticleTypes.LARGE_SMOKE,
+                    blockPos.getX() + 0.5F,
+                    blockPos.getY() + 1,
+                    blockPos.getZ() + 0.5F,
+                    randomSource.nextGaussian() * 0.02F,
+                    (randomSource.nextGaussian() + 1) * 0.05F,
+                    randomSource.nextGaussian() * 0.02F
+            );
+        }
+    }
+
+    @Override
+    public void tick(BlockState blockState, ServerLevel serverLevel, BlockPos blockPos, RandomSource randomSource) {
+        WidePlots.LOGGER.info("Plot Controller Damaged");
+
+        int decay = blockState.getValue(DECAY);
+        serverLevel.setBlock(blockPos, blockState.setValue(DECAY, (decay + 1) % 6), 2);
+
+        serverLevel.scheduleTick(blockPos, this, DECAY_TIME);
     }
 
     @Override
@@ -69,6 +113,10 @@ public class PlotControllerBlock extends BaseEntityBlock {
             return InteractionResult.SUCCESS;
         } else {
             WidePlots.LOGGER.info("we press buttons up in here");
+
+            player.sendSystemMessage(Component.translatable(
+                    "gui.plot_controller.nyi"
+            ));
 
             return InteractionResult.CONSUME;
         }

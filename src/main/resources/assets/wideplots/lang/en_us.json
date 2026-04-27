@@ -12,6 +12,8 @@
   "permissions.wideplots.action.disallowed.build.plot": "You do not own this plot.",
   "permissions.wideplots.action.disallowed.build.road": "You cannot alter the roads.",
 
+  "gui.plot_controller.nyi": "Plot Controller UI is not yet implemented.",
+
   "item.wideplots.bounding_tool": "Bounding Tool",
   "block.wideplots.plot_controller": "Plot Controller",
 

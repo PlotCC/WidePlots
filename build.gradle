@@ -28,6 +28,9 @@ repositories {
     maven {
         url = 'https://maven.herrkatze.com/snapshots'
     }
+    maven {
+        url = "https://squiddev.cc/maven"
+    }
 }
 
 dependencies {
@@ -43,6 +46,8 @@ dependencies {
 
     include modImplementation("com.snek:frameworklib:${project.frameworklib_version}")
     include modImplementation("com.snek:frameworkconfig:${project.frameworkconfig_version}")
+
+    modImplementation("cc.tweaked:cc-tweaked-1.20.1-fabric:${project.cc_version}")
 }
 
 processResources {

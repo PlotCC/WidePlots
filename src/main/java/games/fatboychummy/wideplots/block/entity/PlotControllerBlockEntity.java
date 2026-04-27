@@ -16,6 +16,4 @@ public class PlotControllerBlockEntity extends BlockEntity {
     public static void register() {
          PLOT_CONTROLLER_BLOCK_ENTITY_TYPE = WPBlockEntities.register("plot_controller", BlockEntityType.Builder.of(PlotControllerBlockEntity::new, ModBlocks.PLOT_CONTROLLER));
     }
-
-
 }

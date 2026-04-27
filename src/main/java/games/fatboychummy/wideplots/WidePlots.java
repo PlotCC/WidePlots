@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import games.fatboychummy.wideplots.block.ModBlocks;
 import games.fatboychummy.wideplots.command.PlotCommands;
 import games.fatboychummy.wideplots.debug.DebugCommands;
+import games.fatboychummy.wideplots.integrations.IntegrationController;
 import games.fatboychummy.wideplots.item.ModItems;
 import games.fatboychummy.wideplots.util.TimedRequestHelper;
 import games.fatboychummy.wideplots.world.PlotDimension;
@@ -51,6 +52,9 @@ public class WidePlots implements ModInitializer {
         PlotChunkGenerator.init();
         BounderHandler.init();
         TimedRequestHelper.init();
+
+        // Init any integrations that may be present
+        IntegrationController.initIntegrations();
 
         LOGGER.info("WidePlots initialized successfully");
     }
