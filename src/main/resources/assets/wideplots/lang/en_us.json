@@ -32,6 +32,9 @@
   "commands.wideplots.response.generic.active": "active",
   "commands.wideplots.response.generic.inactive": "inactive",
 
+  "commands.wideplots.response.debug.pretend_online": "You are now marked online.",
+  "commands.wideplots.response.debug.pretend_offline": "You are now marked offline.",
+
   "commands.wideplots.response.generic.not_in_plot": "You are not currently standing within a plot.",
   "commands.wideplots.response.generic.unkown_player": "Unknown Player",
   "commands.wideplots.response.generic.resend_can_wipe": "Are you sure? This will wipe the plot! Resend the command within %d seconds to confirm.",

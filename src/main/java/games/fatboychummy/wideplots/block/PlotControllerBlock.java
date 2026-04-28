@@ -2,6 +2,8 @@ package games.fatboychummy.wideplots.block;
 
 import games.fatboychummy.wideplots.WidePlots;
 import games.fatboychummy.wideplots.block.entity.PlotControllerBlockEntity;
+import games.fatboychummy.wideplots.world.player.PlotPlayerStorage;
+import games.fatboychummy.wideplots.world.player.WPPlayerHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -10,7 +12,9 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
@@ -26,13 +30,12 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Random;
-
 public class PlotControllerBlock extends BaseEntityBlock {
     public static final IntegerProperty DECAY = IntegerProperty.create("decay", 0, 5);
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
-    private static final int DECAY_TIME = 20 * 10; // 10 seconds in ticks.
-    private final RandomSource randomSource = RandomSource.create();
+    private static final int DECAY_CHECK_TIME = 20 * 10; // 10 seconds in ticks.
+    private static final int MAX_OFFLINE_TIME = 20 * 60 * 60 * 24 * 30; // 1 month in ticks.
+    private String playerUUID;
 
     public PlotControllerBlock(Properties properties) {
         super(properties);
@@ -44,11 +47,32 @@ public class PlotControllerBlock extends BaseEntityBlock {
     }
 
     @Override
-    public void onPlace(BlockState blockState, Level level, BlockPos blockPos, BlockState blockState2, boolean bl) {
-        super.onPlace(blockState, level, blockPos, blockState2, bl);
+    public BlockState getStateForPlacement(BlockPlaceContext ctx) {
+        if (!(ctx.getPlayer() instanceof Player)) {
+            return null;
+        }
 
+        return ModBlocks.PLOT_CONTROLLER.defaultBlockState()
+                .setValue(FACING, ctx.getHorizontalDirection().getOpposite())
+                .setValue(DECAY, 0);
+    }
+
+    @Override
+    public void setPlacedBy(Level level, BlockPos blockPos, BlockState blockState, @Nullable LivingEntity livingEntity, ItemStack itemStack) {
         if (!level.isClientSide()) {
-            level.scheduleTick(blockPos, this, DECAY_TIME);
+            if (livingEntity instanceof Player) {
+                playerUUID = livingEntity.getStringUUID();
+            } else {
+                // Block is invalid.
+                level.removeBlock(blockPos, false);
+            }
+        }
+    }
+
+    @Override
+    public void onPlace(BlockState blockState, Level level, BlockPos blockPos, BlockState blockState2, boolean bl) {
+        if (!level.isClientSide()) {
+            level.scheduleTick(blockPos, this, DECAY_CHECK_TIME);
         }
     }
 
@@ -71,12 +95,30 @@ public class PlotControllerBlock extends BaseEntityBlock {
 
     @Override
     public void tick(BlockState blockState, ServerLevel serverLevel, BlockPos blockPos, RandomSource randomSource) {
-        WidePlots.LOGGER.info("Plot Controller Damaged");
+        PlotPlayerStorage storage = WPPlayerHandler.getPlayer(this.playerUUID);
+        if (storage == null) {
+            // TODO: Do we want this? Do we want to just set decay to max instead?
+            WidePlots.LOGGER.error("Storage for '{}' is missing! Destroying the block at ({},{},{})!", this.playerUUID, blockPos.getX(), blockPos.getY(), blockPos.getZ());
+            serverLevel.removeBlock(blockPos, false);
+            return;
+        }
 
-        int decay = blockState.getValue(DECAY);
-        serverLevel.setBlock(blockPos, blockState.setValue(DECAY, (decay + 1) % 6), 2);
-
-        serverLevel.scheduleTick(blockPos, this, DECAY_TIME);
+        long timeOffline = storage.getTimeOffline();
+        WidePlots.LOGGER.info("Player '{}' now at {} ticks offline.", playerUUID, timeOffline);
+        if (timeOffline >= MAX_OFFLINE_TIME) {
+            serverLevel.setBlock(blockPos, blockState.setValue(DECAY, 5), 2);
+        } else if (timeOffline >= MAX_OFFLINE_TIME * 0.8) {
+            serverLevel.setBlock(blockPos, blockState.setValue(DECAY, 4), 2);
+        } else if (timeOffline >= MAX_OFFLINE_TIME * 0.6) {
+            serverLevel.setBlock(blockPos, blockState.setValue(DECAY, 3), 2);
+        } else if (timeOffline >= MAX_OFFLINE_TIME * 0.4) {
+            serverLevel.setBlock(blockPos, blockState.setValue(DECAY, 2), 2);
+        } else if (timeOffline >= MAX_OFFLINE_TIME * 0.2) {
+            serverLevel.setBlock(blockPos, blockState.setValue(DECAY, 1), 2);
+        } else {
+            serverLevel.setBlock(blockPos, blockState.setValue(DECAY, 0), 2);
+        }
+        serverLevel.scheduleTick(blockPos, this, DECAY_CHECK_TIME);
     }
 
     @Override
@@ -84,13 +126,6 @@ public class PlotControllerBlock extends BaseEntityBlock {
             StateDefinition.Builder<Block, BlockState> builder
     ) {
         builder.add(DECAY, FACING);
-    }
-
-    @Override
-    public BlockState getStateForPlacement(BlockPlaceContext blockPlaceContext) {
-        return ModBlocks.PLOT_CONTROLLER.defaultBlockState()
-                .setValue(FACING, blockPlaceContext.getHorizontalDirection().getOpposite())
-                .setValue(DECAY, 0);
     }
 
     @NotNull

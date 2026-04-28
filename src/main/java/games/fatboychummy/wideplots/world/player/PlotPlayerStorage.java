@@ -1,5 +1,9 @@
 package games.fatboychummy.wideplots.world.player;
 
+import games.fatboychummy.wideplots.world.PlotDimension;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
+
 /**
  * Handles storage and management of player data related to plot ownership, permissions, and other data.
  * Planned data to store per player:
@@ -12,4 +16,54 @@ package games.fatboychummy.wideplots.world.player;
  *      - Players will be able to download their plots as schematic files for local storage.
  */
 public class PlotPlayerStorage {
+    private static ServerLevel level;
+    private long lastOnlineTick = 0;
+    private boolean isOnline = false;
+    private String uuid;
+
+    public PlotPlayerStorage(String uuid) {
+        this.uuid = uuid;
+
+        // TODO: Check if we should keep this here.
+        //this.lastOnlineTick = level.getGameTime();
+    }
+
+    public static void init(MinecraftServer server) {
+        level = server.getLevel(PlotDimension.PLOTDIM);
+    }
+
+    /**
+     * Mark this player as currently online.
+     */
+    public void online() {
+        lastOnlineTick = level.getGameTime();
+        isOnline = true;
+    }
+
+    /**
+     * Mark this player as now offline.
+     */
+    public void offline() {
+        lastOnlineTick = level.getGameTime();
+        isOnline = false;
+    }
+
+    /**
+     * Gets the total time the player has been offline for.
+     * @return Elapsed time between now and lastOnlineTick
+     */
+    public long getTimeOffline() {
+        if (isOnline) {
+            return 0;
+        }
+        return level.getGameTime() - lastOnlineTick;
+    }
+
+    /**
+     * Gets the last online tick of this player.
+     * @return the last online tick (waow)
+     */
+    public long getLastOnlineTick() {
+        return lastOnlineTick;
+    }
 }

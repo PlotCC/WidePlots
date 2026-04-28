@@ -4,6 +4,8 @@ import games.fatboychummy.wideplots.command.arguments.PlotActionTypeArgument;
 import games.fatboychummy.wideplots.command.arguments.PlotPermissionArgument;
 import games.fatboychummy.wideplots.command.impl.*;
 import games.fatboychummy.wideplots.command.impl.claims.*;
+import games.fatboychummy.wideplots.command.impl.debug.WPDebugPretendOfflineCommand;
+import games.fatboychummy.wideplots.command.impl.debug.WPDebugPretendOnlineCommand;
 import games.fatboychummy.wideplots.command.impl.permissions.*;
 import games.fatboychummy.wideplots.command.impl.permissions.update.*;
 import games.fatboychummy.wideplots.command.impl.settings.getters.*;
@@ -236,6 +238,14 @@ public class PlotCommands {
                                             .then(Commands.literal("gamemode")
                                                     .executes(PlotSettingsGetGamemodeCommand::execute)
                                             )
+                                    )
+                            )
+                            .then(Commands.literal("debug")
+                                    .then(Commands.literal("pretendOnline")
+                                            .executes(WPDebugPretendOnlineCommand::execute)
+                                    )
+                                    .then(Commands.literal("pretendOffline")
+                                            .executes(WPDebugPretendOfflineCommand::execute)
                                     )
                             )
             );
