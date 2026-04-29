@@ -1,12 +1,20 @@
 package games.fatboychummy.wideplots.integrations;
 
 import games.fatboychummy.wideplots.WidePlots;
-import games.fatboychummy.wideplots.integrations.cc.tweaked.CcTweakedIntegration;
+import games.fatboychummy.wideplots.integrations.cc.tweaked.CCTweakedIntegration;
 import net.fabricmc.loader.api.FabricLoader;
 
+import java.util.Map;
+
 public class IntegrationController {
+    private static final Map<Class<?>, String> integrations = Map.of(
+            CCTweakedIntegration.class, "computercraft"
+    );
+
     public static void initIntegrations() {
-        initIntegration(CcTweakedIntegration.class, "cc-tweaked");
+        for (Map.Entry<Class<?>, String> entry : integrations.entrySet()) {
+            initIntegration(entry.getKey(), entry.getValue());
+        }
     }
 
     public static void initIntegration(Class<?> c, String name) {

@@ -33,8 +33,8 @@ import org.jetbrains.annotations.Nullable;
 public class PlotControllerBlock extends BaseEntityBlock {
     public static final IntegerProperty DECAY = IntegerProperty.create("decay", 0, 5);
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
-    private static final int DECAY_CHECK_TIME = 20 * 10; // 10 seconds in ticks.
-    private static final int MAX_OFFLINE_TIME = 20 * 60 * 60 * 24 * 30; // 1 month in ticks.
+    public static final int DECAY_CHECK_TIME = 20 * 10; // 10 seconds in ticks.
+    public static final int MAX_OFFLINE_TIME = 20 * 60 * 60 * 24 * 30; // 1 month in ticks.
     private String playerUUID;
 
     public PlotControllerBlock(Properties properties) {
@@ -61,7 +61,14 @@ public class PlotControllerBlock extends BaseEntityBlock {
     public void setPlacedBy(Level level, BlockPos blockPos, BlockState blockState, @Nullable LivingEntity livingEntity, ItemStack itemStack) {
         if (!level.isClientSide()) {
             if (livingEntity instanceof Player) {
-                playerUUID = livingEntity.getStringUUID();
+                BlockEntity be = level.getBlockEntity(blockPos);
+                if (be instanceof PlotControllerBlockEntity PCBlockEntity) {
+                    playerUUID = livingEntity.getStringUUID();
+                    PCBlockEntity.setOwner(livingEntity.getUUID());
+                    PCBlockEntity.setChanged();
+                } else {
+                    level.removeBlock(blockPos, false);
+                }
             } else {
                 // Block is invalid.
                 level.removeBlock(blockPos, false);
