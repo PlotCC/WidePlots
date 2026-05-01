@@ -10,7 +10,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
-public class PlotControllerBlockEntity extends BlockEntity {
+public class PlotControllerBlockEntity extends EventBlockEntity {
     public static BlockEntityType<PlotControllerBlockEntity> PLOT_CONTROLLER_BLOCK_ENTITY_TYPE;
     private UUID ownerUUID;
 

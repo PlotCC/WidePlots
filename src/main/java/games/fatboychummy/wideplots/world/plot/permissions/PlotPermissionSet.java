@@ -1,5 +1,7 @@
 package games.fatboychummy.wideplots.world.plot.permissions;
 
+import games.fatboychummy.wideplots.block.entity.PlotControllerBlockEntity;
+import games.fatboychummy.wideplots.block.entity.events.WPPermissionChangedEvent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -36,6 +38,8 @@ public class PlotPermissionSet {
 
     // The area that this permission set applies to. If null, applies to the entire plot.
     private BoundingBox boundingBox;
+
+    private PlotControllerBlockEntity controller;
 
     public PlotPermissionSet(String name) {
         this.name = name;
@@ -122,6 +126,24 @@ public class PlotPermissionSet {
      * @param value The value of the permission (GRANT, UNCHANGED, DENY).
      */
     public void setPermission(PlotActionType permission, PlotPermission value) {
+        PlotPermission old = this.permissionList.getPermission(permission);
+        String oldName = "unset";
+        if (old != null) {
+            oldName = old.name();
+        }
+        String newName = "unset";
+        if (value != null) {
+            newName = value.name();
+        }
+
+        if (controller != null) {
+            controller.fireEvent(new WPPermissionChangedEvent(
+                    permission.name(),
+                    oldName,
+                    newName
+            ));
+        }
+
         this.permissionList.setPermission(permission, value);
     }
 

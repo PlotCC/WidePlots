@@ -2,8 +2,10 @@ package games.fatboychummy.wideplots.block;
 
 import games.fatboychummy.wideplots.WidePlots;
 import games.fatboychummy.wideplots.block.entity.PlotControllerBlockEntity;
+import games.fatboychummy.wideplots.util.PlotUtility;
 import games.fatboychummy.wideplots.world.player.PlotPlayerStorage;
 import games.fatboychummy.wideplots.world.player.WPPlayerHandler;
+import games.fatboychummy.wideplots.world.plot.storage.PlotPCHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -34,8 +36,9 @@ public class PlotControllerBlock extends BaseEntityBlock {
     public static final IntegerProperty DECAY = IntegerProperty.create("decay", 0, 5);
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
     public static final int DECAY_CHECK_TIME = 20 * 10; // 10 seconds in ticks.
-    public static final int MAX_OFFLINE_TIME = 20 * 60 * 60 * 24 * 30; // 1 month in ticks.
+    public static final int MAX_OFFLINE_TIME = 20 * 60 * 2;//20 * 60 * 60 * 24 * 30; // 1 month in ticks.
     private String playerUUID;
+    private boolean skipNotify = false;
 
     public PlotControllerBlock(Properties properties) {
         super(properties);
@@ -48,7 +51,22 @@ public class PlotControllerBlock extends BaseEntityBlock {
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext ctx) {
-        if (!(ctx.getPlayer() instanceof Player)) {
+        Player player = ctx.getPlayer();
+        BlockPos pos = ctx.getClickedPos();
+        if (!(player instanceof Player)) {
+            WidePlots.LOGGER.warn(
+                    "Non-player attempted to place Plot Controller at ({},{},{})",
+                    pos.getX(), pos.getY(), pos.getZ()
+            );
+            return null;
+        }
+
+        if (PlotPCHandler.hasPlotController(PlotUtility.keyFromCoords(pos.getX(), pos.getZ()))) {
+            if (!ctx.getLevel().isClientSide()) {
+                player.sendSystemMessage(Component.translatable(
+                        "wideplots.plot_controller.already_placed"
+                ));
+            }
             return null;
         }
 
@@ -59,28 +77,51 @@ public class PlotControllerBlock extends BaseEntityBlock {
 
     @Override
     public void setPlacedBy(Level level, BlockPos blockPos, BlockState blockState, @Nullable LivingEntity livingEntity, ItemStack itemStack) {
-        if (!level.isClientSide()) {
-            if (livingEntity instanceof Player) {
-                BlockEntity be = level.getBlockEntity(blockPos);
-                if (be instanceof PlotControllerBlockEntity PCBlockEntity) {
-                    playerUUID = livingEntity.getStringUUID();
-                    PCBlockEntity.setOwner(livingEntity.getUUID());
-                    PCBlockEntity.setChanged();
-                } else {
-                    level.removeBlock(blockPos, false);
-                }
-            } else {
-                // Block is invalid.
+        if (level.isClientSide()) {
+            return;
+        }
+
+        if (!(livingEntity instanceof Player)) {
+            WidePlots.LOGGER.warn(
+                    "Non-player placed Plot Controller at ({},{},{})",
+                    blockPos.getX(), blockPos.getY(), blockPos.getZ()
+            );
+            level.removeBlock(blockPos, false);
+            return;
+        }
+
+        BlockEntity be = level.getBlockEntity(blockPos);
+        if (be instanceof PlotControllerBlockEntity PCBlockEntity) {
+            if (!PlotPCHandler.setPlotController(PlotUtility.keyFromCoords(blockPos.getX(), blockPos.getZ()), PCBlockEntity)) {
+                // Plot controller already exists, despite our earlier `hasPlotController` check.
+                WidePlots.LOGGER.warn("Plot Controller existed in check 2, but not check 1.");
+                skipNotify = true;
                 level.removeBlock(blockPos, false);
+                return;
             }
+            playerUUID = livingEntity.getStringUUID();
+            PCBlockEntity.setOwner(livingEntity.getUUID());
+            PCBlockEntity.setChanged();
         }
     }
 
     @Override
     public void onPlace(BlockState blockState, Level level, BlockPos blockPos, BlockState blockState2, boolean bl) {
-        if (!level.isClientSide()) {
-            level.scheduleTick(blockPos, this, DECAY_CHECK_TIME);
+        if (level.isClientSide()) {
+            return;
         }
+        level.scheduleTick(blockPos, this, DECAY_CHECK_TIME);
+    }
+
+    @Override
+    public void onRemove(BlockState blockState, Level level, BlockPos blockPos, BlockState blockState2, boolean bl) {
+        if (level.isClientSide()) {
+            return;
+        }
+        if (!skipNotify) {
+            PlotPCHandler.removePlotController(PlotUtility.keyFromCoords(blockPos.getX(), blockPos.getZ()));
+        }
+        super.onRemove(blockState, level, blockPos, blockState2, bl);
     }
 
     @Override
@@ -110,8 +151,15 @@ public class PlotControllerBlock extends BaseEntityBlock {
             return;
         }
 
+        if (!PlotPCHandler.hasPlotController(PlotUtility.keyFromCoords(blockPos.getX(), blockPos.getZ()))) {
+            WidePlots.LOGGER.error("Ticking Plot Controller that is not tracked, removing it.");
+            serverLevel.removeBlock(blockPos, false);
+            return;
+        }
+
         long timeOffline = storage.getTimeOffline();
         WidePlots.LOGGER.info("Player '{}' now at {} ticks offline.", playerUUID, timeOffline);
+        skipNotify = true;
         if (timeOffline >= MAX_OFFLINE_TIME) {
             serverLevel.setBlock(blockPos, blockState.setValue(DECAY, 5), 2);
         } else if (timeOffline >= MAX_OFFLINE_TIME * 0.8) {
@@ -125,6 +173,7 @@ public class PlotControllerBlock extends BaseEntityBlock {
         } else {
             serverLevel.setBlock(blockPos, blockState.setValue(DECAY, 0), 2);
         }
+        skipNotify = false;
         serverLevel.scheduleTick(blockPos, this, DECAY_CHECK_TIME);
     }
 

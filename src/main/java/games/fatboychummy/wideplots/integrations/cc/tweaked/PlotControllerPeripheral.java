@@ -10,6 +10,8 @@ import games.fatboychummy.wideplots.integrations.cc.tweaked.event.ComputerEvent;
 import games.fatboychummy.wideplots.util.PlotUtility;
 import games.fatboychummy.wideplots.world.player.PlotPlayerStorage;
 import games.fatboychummy.wideplots.world.player.WPPlayerHandler;
+import games.fatboychummy.wideplots.world.plot.storage.PlotStorage;
+import games.fatboychummy.wideplots.world.plot.storage.PlotStorageHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.player.Player;
@@ -98,6 +100,17 @@ public class PlotControllerPeripheral implements IPeripheral {
     public final Object getPlotShape() throws LuaException {
         // TODO
         throw new LuaException("Not yet implemented.");
+    }
+
+    @LuaFunction
+    public final String getPlotName() throws LuaException {
+        BlockPos pos = blockEntity.getBlockPos();
+        PlotStorage plot = PlotStorageHandler.getPlot(pos.getX(), pos.getZ());
+        if (plot == null) {
+            throw new LuaException("Plot is null");
+        }
+
+        return plot.getName();
     }
 
     /**

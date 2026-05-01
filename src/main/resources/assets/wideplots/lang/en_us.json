@@ -16,6 +16,7 @@
 
   "item.wideplots.bounding_tool": "Bounding Tool",
   "block.wideplots.plot_controller": "Plot Controller",
+  "wideplots.plot_controller.already_placed": "There is already a Plot Controller in this plot.",
 
   "item.wideplots.bounding_tool.use_command": "You must use '/plot permissions getBoundingTool <permissionSetName>' to use this item.",
   "item.wideplots.bounding_tool.not_in_plot": "This block is not within a plot.",

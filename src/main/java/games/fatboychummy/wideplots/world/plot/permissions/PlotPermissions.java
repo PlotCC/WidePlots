@@ -1,5 +1,6 @@
 package games.fatboychummy.wideplots.world.plot.permissions;
 
+import games.fatboychummy.wideplots.WidePlots;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
@@ -15,13 +16,13 @@ public class PlotPermissions {
     public static final PlotPermissionSet defaultPermissions = new PlotPermissionSet("Server Default Permissions");
 
     // Any overrides to the plot-default permissions for specific players, blocks, or items.
-    private ArrayList<PlotPermissionSet> playerPermissions;
+    private final ArrayList<PlotPermissionSet> playerPermissions;
 
     // The owner of the plot.
     private final String ownerUUID;
 
     public PlotPermissions(String ownerUUID) {
-        this.playerPermissions = new ArrayList<PlotPermissionSet>();
+        this.playerPermissions = new ArrayList<>();
         this.ownerUUID = ownerUUID;
     }
 
@@ -36,6 +37,7 @@ public class PlotPermissions {
      * @return The permission for the specified player to perform the specified action. Should be either GRANT or DENY.
      */
     public PlotPermission getActionResult(String playerUUID, PlotActionType actionType, @Nullable BlockState blockState, @Nullable BlockPos blockPos) {
+        WidePlots.LOGGER.info("Player {} trying {} (owner is {})", playerUUID, actionType.name(), ownerUUID);
         if (playerUUID == null) {
             return PlotPermission.DENY; // Deny all actions for null players
         }

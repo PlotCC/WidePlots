@@ -3,6 +3,7 @@ package games.fatboychummy.wideplots.integrations;
 import games.fatboychummy.wideplots.WidePlots;
 import games.fatboychummy.wideplots.integrations.cc.tweaked.CCTweakedIntegration;
 import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.ModContainer;
 
 import java.util.Map;
 

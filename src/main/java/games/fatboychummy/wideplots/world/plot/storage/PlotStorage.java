@@ -1,10 +1,20 @@
 package games.fatboychummy.wideplots.world.plot.storage;
 
+import games.fatboychummy.wideplots.block.ModBlocks;
+import games.fatboychummy.wideplots.block.entity.PlotControllerBlockEntity;
+import games.fatboychummy.wideplots.block.entity.events.WPSettingChangedEvent;
 import games.fatboychummy.wideplots.util.PlotUtility;
 import games.fatboychummy.wideplots.world.generation.PlotChunkGenerator;
 import games.fatboychummy.wideplots.world.plot.permissions.PlotPermissions;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerChunkCache;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Tuple;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Holds an individual plot's data, including ownership, permissions, and backup information.
@@ -49,7 +59,11 @@ public class PlotStorage {
     // When players run `/plot visit <player>`, they will be teleported to the center of the plot with this offset.
     private BlockPos visitorSpawnOffset = new BlockPos(0, 32, 0);
 
-    GameType visitorGameMode = GameType.CREATIVE;
+    // The plot controller block associated with this plot data.
+    private PlotControllerBlockEntity controller;
+
+    // The gamemode of visitors.
+    private GameType visitorGameMode = GameType.CREATIVE;
 
     public PlotStorage(String ownerUUID, int x, int z) {
         this.ownerUUID = ownerUUID;
@@ -76,20 +90,47 @@ public class PlotStorage {
         return z;
     }
 
+    private void settingChange(String setting, String oldValue, String newValue) {
+        if (controller != null) {
+            controller.fireEvent(new WPSettingChangedEvent(
+                    setting,
+                    oldValue,
+                    newValue
+            ));
+        }
+    }
+
     public void setName(String name) {
+        settingChange("name", this.name, name);
         this.name = name;
     }
 
     public void setDescription(String description) {
+        settingChange("description", this.description, description);
         this.description = description;
     }
 
     public void setWelcomeMessage(String welcomeMessage) {
+        settingChange("welcome_message", this.welcomeMessage, welcomeMessage);
         this.welcomeMessage = welcomeMessage;
     }
 
     public void setDepartureMessage(String departureMessage) {
+        settingChange("departure_message", this.departureMessage, departureMessage);
         this.departureMessage = departureMessage;
+    }
+
+    public void setVisitorSpawnOffset(BlockPos visitorSpawnOffset) {
+        String oldName = "x:" + visitorSpawnOffset.getX() + " y:" + visitorSpawnOffset.getY() + " z:" + visitorSpawnOffset.getZ();
+        String newName = "x:" + visitorSpawnOffset.getX() + " y:" + visitorSpawnOffset.getY() + " z:";
+
+        settingChange("visitor_spawn", oldName, newName);
+        this.visitorSpawnOffset = visitorSpawnOffset;
+    }
+
+    public void setVisitorGameMode(GameType gameMode) {
+        settingChange("visitor_gamemode", this.visitorGameMode.name(), gameMode.name());
+        this.visitorGameMode = gameMode;
     }
 
     public String getName() {
@@ -116,22 +157,22 @@ public class PlotStorage {
         return visitorSpawnOffset;
     }
 
-    public void setVisitorSpawnOffset(BlockPos visitorSpawnOffset) {
-        this.visitorSpawnOffset = visitorSpawnOffset;
-    }
-
     public BlockPos getPlotCenter() {
         int centerX = x * PlotUtility.CELL + PlotChunkGenerator.PLOT_SIZE / 2;
         int centerZ = z * PlotUtility.CELL + PlotChunkGenerator.PLOT_SIZE / 2;
         return new BlockPos(centerX, 0, centerZ);
     }
 
-    public void setVisitorGameMode(GameType gameMode) {
-        this.visitorGameMode = gameMode;
-    }
-
     public GameType getVisitorGameMode() {
         return visitorGameMode;
+    }
+
+    public @Nullable PlotControllerBlockEntity getPlotController() {
+        if (controller == null) {
+            return PlotPCHandler.getPlotController(x, z);
+        }
+
+        return controller;
     }
 
     /**
@@ -156,18 +197,3 @@ public class PlotStorage {
         }
     }
 }
-
-/**
- * [20:18:45] [Server thread/INFO] (WidePlots) Regenerating chunk at 0,0 for plot changes within 0,0, 47,47
- * [20:18:45] [Server thread/INFO] (WidePlots) Regenerating chunk at 0,1 for plot changes within 0,0, 47,47
- * [20:18:45] [Server thread/INFO] (WidePlots) Regenerating chunk at 0,2 for plot changes within 0,0, 47,47
- * [20:18:46] [Server thread/INFO] (WidePlots) Regenerating chunk at 1,0 for plot changes within 0,0, 47,47
- * [20:18:46] [Server thread/INFO] (WidePlots) Regenerating chunk at 1,1 for plot changes within 0,0, 47,47
- * [20:18:46] [Server thread/INFO] (WidePlots) Regenerating chunk at 1,2 for plot changes within 0,0, 47,47
- * [20:18:46] [Server thread/INFO] (WidePlots) Regenerating chunk at 2,0 for plot changes within 0,0, 47,47
- * [20:18:47] [Server thread/INFO] (WidePlots) Regenerating chunk at 2,1 for plot changes within 0,0, 47,47
- * [20:18:47] [Server thread/INFO] (WidePlots) Regenerating chunk at 2,2 for plot changes within 0,0, 47,47
- *
- * Should be within 8,8 to 55,55
- * Should regen chunks 0,0 to 3,3
- */

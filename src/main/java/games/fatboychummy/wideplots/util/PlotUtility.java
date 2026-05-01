@@ -9,6 +9,7 @@ import games.fatboychummy.wideplots.world.plot.storage.PlotStorage;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Tuple;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import org.jetbrains.annotations.Nullable;
 
 public class PlotUtility {
@@ -46,5 +47,29 @@ public class PlotUtility {
     public static boolean isActuallyInBounds(BlockPos pos) {
         return Math.floorMod(pos.getX(), CELL) >= PlotChunkGenerator.ROAD_WIDTH &&
                 Math.floorMod(pos.getZ(), CELL) >= PlotChunkGenerator.ROAD_WIDTH;
+    }
+
+    /**
+     * Gets a bounding box of the plot at a given plot coordinate.
+     */
+    public static BoundingBox getPlotBoundingBox(Tuple<Integer, Integer> coordinate) {
+        int px = coordinate.getA();
+        int pz = coordinate.getB();
+
+        int baseX = px * CELL;
+        int baseZ = pz * CELL;
+
+        int minX = baseX + PlotChunkGenerator.ROAD_WIDTH;
+        int minZ = baseZ + PlotChunkGenerator.ROAD_WIDTH;
+
+        int maxX = minX + PlotChunkGenerator.PLOT_SIZE - 1;
+        int maxZ = minZ + PlotChunkGenerator.PLOT_SIZE - 1;
+
+        int minY = -64;
+        int maxY = 384;
+
+        return new BoundingBox(
+            minX, minY, maxX, maxY, minZ, maxZ
+        );
     }
 }
