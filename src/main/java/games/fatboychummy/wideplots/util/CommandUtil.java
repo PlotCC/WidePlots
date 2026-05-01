@@ -197,10 +197,10 @@ public class CommandUtil {
         assert player != null;
 
         if (plot.getPermissions().getActionResult(player.getStringUUID(), action, null, null) == PlotPermission.GRANT) {
-            translatableFailure(context, "commands.wideplots.response.generic.no_permission_plot");
-            return true;
+            return false;
         }
-        return false;
+        translatableFailure(context, "commands.wideplots.response.generic.no_permission_plot");
+        return true;
     }
 
     public static ServerPlayer requirePlayer(CommandContext<CommandSourceStack> context) {
