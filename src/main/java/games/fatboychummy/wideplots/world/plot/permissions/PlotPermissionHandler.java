@@ -1,6 +1,5 @@
 package games.fatboychummy.wideplots.world.plot.permissions;
 
-import com.demonwav.mcdev.annotations.Translatable;
 import games.fatboychummy.wideplots.WidePlots;
 import games.fatboychummy.wideplots.util.PlotUtility;
 import games.fatboychummy.wideplots.world.generation.PlotChunkGenerator;
@@ -31,7 +30,7 @@ import java.util.Map;
  */
 public class PlotPermissionHandler {
     // Map of active plot coordinates (x, z) to their permission data.
-    private static final Map<Long, PlotPermissions> activePlots = new HashMap<>();;
+    private static final Map<Long, PlotAccessManager> activePlots = new HashMap<>();;
     private static final int CELL = PlotChunkGenerator.PLOT_SIZE + PlotChunkGenerator.ROAD_WIDTH;
 
     public static void init() {
@@ -42,11 +41,11 @@ public class PlotPermissionHandler {
         PlayerBlockBreakEvents.BEFORE.register(
                 (level, player, pos, state, blockEntity) -> {
                     long plotKey = PlotUtility.keyFromCoords(pos.getX(), pos.getZ());
-                    PlotPermissions permissions = activePlots.get(plotKey);
+                    PlotAccessManager permissions = activePlots.get(plotKey);
 
-                    PlotPermission result = (
+                    PlotPermissionResult result = (
                             permissions == null || !PlotUtility.isActuallyInBounds(pos) ?
-                                    PlotPermissions.defaultPermissions.getActionResult( // Player is not within a plot
+                                    PlotAccessManager.defaultPermissions.getActionResult( // Player is not within a plot
                                             player.getStringUUID(),
                                             PlotActionType.BUILD,
                                             state,
@@ -60,7 +59,7 @@ public class PlotPermissionHandler {
                                     )
                     );
 
-                    if (result != PlotPermission.GRANT) {
+                    if (result != PlotPermissionResult.GRANT) {
                         tellPlayerDisallowedActionC(
                                 player,
                                 PlotActionType.BUILD,
@@ -68,7 +67,7 @@ public class PlotPermissionHandler {
                         );
                     }
 
-                    return result == PlotPermission.GRANT;
+                    return result == PlotPermissionResult.GRANT;
                 }
         );
 
@@ -78,13 +77,13 @@ public class PlotPermissionHandler {
                     BlockPos pos = hitResult.getBlockPos();
                     BlockState block = world.getBlockState(pos);
                     long plotKey = PlotUtility.keyFromCoords(pos.getX(), pos.getZ());
-                    PlotPermissions permissions = activePlots.get(plotKey);
+                    PlotAccessManager permissions = activePlots.get(plotKey);
 
                     if (player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof BlockItem) {
                         // Right-clicking while holding a block, likely trying to place a block.
-                        PlotPermission result = (
+                        PlotPermissionResult result = (
                                 permissions == null || !PlotUtility.isActuallyInBounds(pos) ?
-                                        PlotPermissions.defaultPermissions.getActionResult(
+                                        PlotAccessManager.defaultPermissions.getActionResult(
                                                 player.getStringUUID(),
                                                 PlotActionType.BUILD,
                                                 block,
@@ -98,7 +97,7 @@ public class PlotPermissionHandler {
                                         )
                         );
 
-                        if (result != PlotPermission.GRANT) {
+                        if (result != PlotPermissionResult.GRANT) {
                             tellPlayerDisallowedAction(
                                     player,
                                     PlotActionType.BUILD,
@@ -106,13 +105,13 @@ public class PlotPermissionHandler {
                             );
                         }
 
-                        return result == PlotPermission.GRANT ? InteractionResult.PASS : InteractionResult.FAIL;
+                        return result == PlotPermissionResult.GRANT ? InteractionResult.PASS : InteractionResult.FAIL;
                     }
 
                     if (block.hasBlockEntity()) {
-                        PlotPermission result = (
+                        PlotPermissionResult result = (
                                 permissions == null || !PlotUtility.isActuallyInBounds(pos) ?
-                                        PlotPermissions.defaultPermissions.getActionResult(
+                                        PlotAccessManager.defaultPermissions.getActionResult(
                                             player.getStringUUID(),
                                             PlotActionType.ACCESS,
                                             block,
@@ -126,7 +125,7 @@ public class PlotPermissionHandler {
                                         )
                         );
 
-                        if (result != PlotPermission.GRANT) {
+                        if (result != PlotPermissionResult.GRANT) {
                             tellPlayerDisallowedAction(
                                     player,
                                     PlotActionType.ACCESS,
@@ -134,13 +133,13 @@ public class PlotPermissionHandler {
                             );
                         }
 
-                        return result == PlotPermission.GRANT ? InteractionResult.PASS : InteractionResult.FAIL;
+                        return result == PlotPermissionResult.GRANT ? InteractionResult.PASS : InteractionResult.FAIL;
                     }
 
                     // Right-clicking while holding nothing, likely trying to interact with a block.
-                    PlotPermission result = (
+                    PlotPermissionResult result = (
                             permissions == null || !PlotUtility.isActuallyInBounds(pos) ?
-                                    PlotPermissions.defaultPermissions.getActionResult(
+                                    PlotAccessManager.defaultPermissions.getActionResult(
                                             player.getStringUUID(),
                                             PlotActionType.INTERACT,
                                             block,
@@ -154,7 +153,7 @@ public class PlotPermissionHandler {
                                     )
                     );
 
-                    if (result != PlotPermission.GRANT) {
+                    if (result != PlotPermissionResult.GRANT) {
                         tellPlayerDisallowedAction(
                                 player,
                                 PlotActionType.INTERACT,
@@ -162,7 +161,7 @@ public class PlotPermissionHandler {
                         );
                     }
 
-                    return result == PlotPermission.GRANT ? InteractionResult.PASS : InteractionResult.FAIL;
+                    return result == PlotPermissionResult.GRANT ? InteractionResult.PASS : InteractionResult.FAIL;
                 }
         );
 
@@ -170,7 +169,7 @@ public class PlotPermissionHandler {
         UseItemCallback.EVENT.register(
                 (player, world, hand) -> {
                     long plotKey = PlotUtility.keyFromCoords(player.getBlockX(), player.getBlockZ());
-                    PlotPermissions permissions = activePlots.get(plotKey);
+                    PlotAccessManager permissions = activePlots.get(plotKey);
                     ItemStack itemStack = player.getItemInHand(hand);
                     BlockPos playerPos = new BlockPos(
                             player.getBlockX(),
@@ -179,9 +178,9 @@ public class PlotPermissionHandler {
                     );
                     BlockState block = world.getBlockState(playerPos);
 
-                    PlotPermission result = (
+                    PlotPermissionResult result = (
                             permissions == null || !PlotUtility.isActuallyInBounds(playerPos) ?
-                                    PlotPermissions.defaultPermissions.getActionResult(
+                                    PlotAccessManager.defaultPermissions.getActionResult(
                                             player.getStringUUID(),
                                             PlotActionType.ACCESS,
                                             null,
@@ -195,7 +194,7 @@ public class PlotPermissionHandler {
                                     )
                     );
 
-                    if (result != PlotPermission.GRANT) {
+                    if (result != PlotPermissionResult.GRANT) {
                         tellPlayerDisallowedAction(
                                 player,
                                 PlotActionType.ACCESS,
@@ -203,7 +202,7 @@ public class PlotPermissionHandler {
                         );
                     }
 
-                    return result == PlotPermission.GRANT ? InteractionResultHolder.pass(itemStack): InteractionResultHolder.fail(itemStack);
+                    return result == PlotPermissionResult.GRANT ? InteractionResultHolder.pass(itemStack): InteractionResultHolder.fail(itemStack);
                 }
         );
 
@@ -230,13 +229,28 @@ public class PlotPermissionHandler {
      * @see PlotUtility#key(int, int)
      * @return True if the registration was successful, false if the plot is already registered to another permission object.
      */
-    public static boolean register(long key, PlotPermissions permissions) {
+    public static boolean register(long key, PlotAccessManager permissions) {
+        WidePlots.LOGGER.info("Registering PlotPermissionHandler for key {}", key);
         if (activePlots.containsKey(key)) {
             return false;
         }
 
         activePlots.put(key, permissions);
         return true;
+    }
+
+    /**
+     * Gets a plot permissions object for a given key.
+     */
+    public static @Nullable PlotAccessManager get(long key) {
+        WidePlots.LOGGER.info("Getting PlotPermissionHandler for key {}", key);
+        return activePlots.get(key);
+    }
+
+    public static @Nullable PlotAccessManager get(BlockPos pos) {
+        long key = PlotUtility.keyFromCoords(pos.getX(), pos.getZ());
+        WidePlots.LOGGER.info("Getting PlotPermissionHandler for pos {} ({})", pos, key);
+        return get(key);
     }
 
     /**

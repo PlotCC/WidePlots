@@ -1,19 +1,13 @@
 package games.fatboychummy.wideplots.world.plot.storage;
 
-import games.fatboychummy.wideplots.block.ModBlocks;
 import games.fatboychummy.wideplots.block.entity.PlotControllerBlockEntity;
 import games.fatboychummy.wideplots.block.entity.events.WPSettingChangedEvent;
 import games.fatboychummy.wideplots.util.PlotUtility;
 import games.fatboychummy.wideplots.world.generation.PlotChunkGenerator;
-import games.fatboychummy.wideplots.world.plot.permissions.PlotPermissions;
+import games.fatboychummy.wideplots.world.plot.permissions.PlotAccessManager;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerChunkCache;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.level.GameType;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -30,7 +24,7 @@ public class PlotStorage {
     private final int z;
 
     // Permissions data (who can build, who can access, etc.)
-    private final PlotPermissions permissions;
+    private final PlotAccessManager permissions;
 
     // The plot's name as given by the player.
     private String name;
@@ -69,7 +63,7 @@ public class PlotStorage {
         this.ownerUUID = ownerUUID;
         this.x = x;
         this.z = z;
-        this.permissions = new PlotPermissions(ownerUUID);
+        this.permissions = new PlotAccessManager(ownerUUID);
 
         this.name = "Unnamed Plot";
         this.description = "No plot description.";
@@ -90,9 +84,10 @@ public class PlotStorage {
         return z;
     }
 
-    private void settingChange(String setting, String oldValue, String newValue) {
+    private void settingChange(String playerUUID, String setting, String oldValue, String newValue) {
         if (controller != null) {
             controller.fireEvent(new WPSettingChangedEvent(
+                    playerUUID,
                     setting,
                     oldValue,
                     newValue
@@ -100,36 +95,44 @@ public class PlotStorage {
         }
     }
 
-    public void setName(String name) {
-        settingChange("name", this.name, name);
+    public void registerController(@NotNull PlotControllerBlockEntity controller) {
+        this.controller = controller;
+    }
+
+    public void removeController() {
+        this.controller = null;
+    }
+
+    public void setName(String playerUUID, String name) {
+        settingChange("name", playerUUID, this.name, name);
         this.name = name;
     }
 
-    public void setDescription(String description) {
-        settingChange("description", this.description, description);
+    public void setDescription(String playerUUID, String description) {
+        settingChange(playerUUID, "description", this.description, description);
         this.description = description;
     }
 
-    public void setWelcomeMessage(String welcomeMessage) {
-        settingChange("welcome_message", this.welcomeMessage, welcomeMessage);
+    public void setWelcomeMessage(String playerUUID, String welcomeMessage) {
+        settingChange(playerUUID, "welcome_message", this.welcomeMessage, welcomeMessage);
         this.welcomeMessage = welcomeMessage;
     }
 
-    public void setDepartureMessage(String departureMessage) {
-        settingChange("departure_message", this.departureMessage, departureMessage);
+    public void setDepartureMessage(String playerUUID, String departureMessage) {
+        settingChange(playerUUID, "departure_message", this.departureMessage, departureMessage);
         this.departureMessage = departureMessage;
     }
 
-    public void setVisitorSpawnOffset(BlockPos visitorSpawnOffset) {
+    public void setVisitorSpawnOffset(String playerUUID, BlockPos visitorSpawnOffset) {
         String oldName = "x:" + visitorSpawnOffset.getX() + " y:" + visitorSpawnOffset.getY() + " z:" + visitorSpawnOffset.getZ();
         String newName = "x:" + visitorSpawnOffset.getX() + " y:" + visitorSpawnOffset.getY() + " z:";
 
-        settingChange("visitor_spawn", oldName, newName);
+        settingChange(playerUUID, "visitor_spawn", oldName, newName);
         this.visitorSpawnOffset = visitorSpawnOffset;
     }
 
-    public void setVisitorGameMode(GameType gameMode) {
-        settingChange("visitor_gamemode", this.visitorGameMode.name(), gameMode.name());
+    public void setVisitorGameMode(String playerUUID, GameType gameMode) {
+        settingChange(playerUUID, "visitor_gamemode", this.visitorGameMode.name(), gameMode.name());
         this.visitorGameMode = gameMode;
     }
 
@@ -149,7 +152,7 @@ public class PlotStorage {
         return departureMessage;
     }
 
-    public PlotPermissions getPermissions() {
+    public PlotAccessManager getPermissions() {
         return permissions;
     }
 

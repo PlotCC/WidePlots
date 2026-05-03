@@ -9,20 +9,22 @@ import java.util.Set;
  *
  * Permissions are structured as a hashmap of the permission name to the permission value (GRANT, UNCHANGED, DENY) for each player.
  */
-public class PlotPermissionList {
+public class PlotAccessRules {
     // The permissions for this plot.
-    private Map<PlotActionType, PlotPermission> permissions;
+    private Map<PlotActionType, PlotPermissionResult> permissions;
 
-    public PlotPermissionList() {
+    public PlotAccessRules() {
         this.permissions = new HashMap<>();
     }
+
+    // TODO: Refactor the permission events to include the correct naming that I have here.
 
     /**
      * Sets the permission for a specific permission name.
      * @param permission The name of the permission to set.
      * @param value The value of the permission (GRANT, UNCHANGED, DENY).
      */
-    public void setPermission(PlotActionType permission, PlotPermission value) {
+    public void setPermission(PlotActionType permission, PlotPermissionResult value) {
         this.permissions.put(permission, value);
     }
 
@@ -31,8 +33,8 @@ public class PlotPermissionList {
      * @param permission The name of the permission to get.
      * @return The value of the permission (GRANT, UNCHANGED, DENY) for the specified permission name.
      */
-    public PlotPermission getPermission(PlotActionType permission) {
-        return this.permissions.getOrDefault(permission, PlotPermission.UNCHANGED);
+    public PlotPermissionResult getPermission(PlotActionType permission) {
+        return this.permissions.getOrDefault(permission, PlotPermissionResult.UNCHANGED);
     }
 
     /**

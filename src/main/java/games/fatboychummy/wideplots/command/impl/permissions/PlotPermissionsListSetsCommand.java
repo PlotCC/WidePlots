@@ -31,14 +31,14 @@ public class PlotPermissionsListSetsCommand {
         StringBuilder builder = new StringBuilder();
         builder.append(Component.translatable("commands.wideplots.response.permissions.list.sets").getString());
 
-        ArrayList<PlotPermissionSet> sets = plot.getPermissions().getPlayerPermissions();
+        ArrayList<PlotAccessRuleSet> sets = plot.getPermissions().getPlayerPermissions();
         if (sets.isEmpty()) {
             CommandUtil.translatableSuccess(context, "commands.wideplots.response.permissions.list.none");
             return 1;
         }
 
         for (int i = 0; i < sets.size(); i++) {
-            PlotPermissionSet set = sets.get(i);
+            PlotAccessRuleSet set = sets.get(i);
             builder.append("\n  (p").append(i).append(") "); // Priority
             appendSet(builder, set);
         }
@@ -46,7 +46,7 @@ public class PlotPermissionsListSetsCommand {
         return 1;
     }
 
-    private static void appendSet(StringBuilder builder, PlotPermissionSet set) {
+    private static void appendSet(StringBuilder builder, PlotAccessRuleSet set) {
         // Set name
         builder.append(set.getName()).append(":\n    ");
 
@@ -87,13 +87,13 @@ public class PlotPermissionsListSetsCommand {
         }
 
         // Permissions
-        PlotPermissionList permissions = set.getPermissionList();
+        PlotAccessRules permissions = set.getPermissionList();
         builder.append(Component.translatable("commands.wideplots.response.permissions.list.permissions").getString());
 
         for (PlotActionType action : permissions.getPermissions()) {
             builder.append("\n      ");
 
-            PlotPermission perm = permissions.getPermission(action);
+            PlotPermissionResult perm = permissions.getPermission(action);
 
             String actionTranslation = "commands.wideplots.response.permissions.list.actions."
                     + action.toString().toLowerCase();

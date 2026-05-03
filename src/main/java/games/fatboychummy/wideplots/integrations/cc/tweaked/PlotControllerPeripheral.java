@@ -6,6 +6,7 @@ import dan200.computercraft.api.peripheral.IComputerAccess;
 import dan200.computercraft.api.peripheral.IPeripheral;
 import games.fatboychummy.wideplots.block.PlotControllerBlock;
 import games.fatboychummy.wideplots.block.entity.PlotControllerBlockEntity;
+import games.fatboychummy.wideplots.block.entity.events.WPEvent;
 import games.fatboychummy.wideplots.integrations.cc.tweaked.event.ComputerEvent;
 import games.fatboychummy.wideplots.util.PlotUtility;
 import games.fatboychummy.wideplots.world.player.PlotPlayerStorage;
@@ -130,6 +131,14 @@ public class PlotControllerPeripheral implements IPeripheral {
         return IPeripheral.super.getAdditionalTypes();
     }
 
+    private void handleEvent(WPEvent event) {
+        synchronized (computers) {
+            for (IComputerAccess computer : computers) {
+                computer.queueEvent(event.getEventName(), event.getArgs());
+            }
+        }
+    }
+
     /**
      * @param computer The interface to the computer that is being attached. Remember that multiple computers can be
      *                 attached to a peripheral at once.
@@ -139,6 +148,9 @@ public class PlotControllerPeripheral implements IPeripheral {
         synchronized (computers) {
             computers.add(computer);
         }
+
+        // The listener system is a Set, so we don't need to worry about adding duplicates.
+        blockEntity.addListener(this::handleEvent);
     }
 
     /**
@@ -149,6 +161,11 @@ public class PlotControllerPeripheral implements IPeripheral {
     public void detach(IComputerAccess computer) {
         synchronized (computers) {
             computers.remove(computer);
+
+            // However, when detaching, we need to make sure all computers are detached when we remove the listener.
+            if (computers.isEmpty()) {
+                blockEntity.removeListener(this::handleEvent);
+            }
         }
     }
 

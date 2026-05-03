@@ -63,7 +63,7 @@ public class BoundingToolItem extends Item {
         }
 
         // Check the player has permission to do this in this plot.
-        if (plot.getPermissions().getActionResult(player.getStringUUID(),  PlotActionType.INTERACT, null, pos) != PlotPermission.GRANT) {
+        if (plot.getPermissions().getActionResult(player.getStringUUID(),  PlotActionType.INTERACT, null, pos) != PlotPermissionResult.GRANT) {
             ItemUtil.translatableError(
                     player,
                     "item.wideplots.bounding_tool.no_permission"
@@ -72,7 +72,7 @@ public class BoundingToolItem extends Item {
         }
 
         // Check the permission set still exists.
-        PlotPermissionSet set = plot.getPermissions().getPermissionSet(setName);
+        PlotAccessRuleSet set = plot.getPermissions().getPermissionSet(setName);
         if (set == null) {
             ItemUtil.translatableError(
                     player,
@@ -110,7 +110,7 @@ public class BoundingToolItem extends Item {
                 "item.wideplots.bounding_tool.pos2",
                 setName
         );
-        set.setBoundingBox(result.getBoundingBox());
+        set.setBoundingBox(player.getStringUUID(), result.getBoundingBox());
         return InteractionResult.sidedSuccess(player.level().isClientSide);
     }
 }

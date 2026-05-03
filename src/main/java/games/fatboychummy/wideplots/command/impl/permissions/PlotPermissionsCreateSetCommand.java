@@ -6,20 +6,23 @@ import games.fatboychummy.wideplots.util.CommandUtil;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorage;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorageHandler;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.world.entity.player.Player;
 
 public class PlotPermissionsCreateSetCommand {
     public static int execute(CommandContext<CommandSourceStack> context) {
         if (CommandUtil.shouldBlock(context, PermissionLevel.ALL)) {return 0;}
         if (CommandUtil.blockNonOwner(context)) {return 0;}
 
-        PlotStorage plot = PlotStorageHandler.getPlot(CommandUtil.requirePlayer(context));
+        Player player = CommandUtil.requirePlayer(context);
+        PlotStorage plot = PlotStorageHandler.getPlot(player);
         String setName = context.getArgument("name", String.class);
+
         if (plot.getPermissions().hasPermissionSet(setName)) {
             CommandUtil.translatableFailure(context, "commands.wideplots.response.permissions.set_exists");
             return 0;
         }
 
-        plot.getPermissions().addPermissionSet(setName);
+        plot.getPermissions().addPermissionSet(player.getStringUUID(), setName);
         CommandUtil.translatableSuccess(context, "commands.wideplots.response.permissions.created_set", setName);
         return 1;
     }

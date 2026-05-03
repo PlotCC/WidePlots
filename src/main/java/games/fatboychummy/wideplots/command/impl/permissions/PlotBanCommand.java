@@ -5,12 +5,13 @@ import com.mojang.brigadier.context.CommandContext;
 import games.fatboychummy.wideplots.command.PermissionLevel;
 import games.fatboychummy.wideplots.command.impl.PlotKickCommand;
 import games.fatboychummy.wideplots.util.CommandUtil;
+import games.fatboychummy.wideplots.world.plot.permissions.PlotAccessRuleSet;
 import games.fatboychummy.wideplots.world.plot.permissions.PlotActionType;
-import games.fatboychummy.wideplots.world.plot.permissions.PlotPermission;
-import games.fatboychummy.wideplots.world.plot.permissions.PlotPermissionSet;
+import games.fatboychummy.wideplots.world.plot.permissions.PlotPermissionResult;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorage;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorageHandler;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
 
 public class PlotBanCommand {
@@ -18,9 +19,10 @@ public class PlotBanCommand {
         if (CommandUtil.shouldBlock(context, PermissionLevel.ALL)) {return 0;}
         if (CommandUtil.blockNonOwner(context)) {return 0;}
 
-        PlotStorage plot = PlotStorageHandler.getPlot(CommandUtil.requirePlayer(context));
+        Player player = CommandUtil.requirePlayer(context);
+        PlotStorage plot = PlotStorageHandler.getPlot(player);
         GameProfile playerToBan = context.getArgument("player", GameProfile.class);
-        PlotPermissionSet set = getOrCreateBannedSet(context, plot);
+        PlotAccessRuleSet set = getOrCreateBannedSet(context, plot);
         if (set == null) {
             return 0;
         }
@@ -30,19 +32,20 @@ public class PlotBanCommand {
             return 0;
         }
 
-        set.addPlayer(playerToBan.getId().toString());
+        set.addPlayer(player.getStringUUID(), playerToBan.getId().toString());
         PlotKickCommand.execute(context);
         CommandUtil.translatableSuccess(context, "commands.wideplots.response.ban.added_player", playerToBan.getName());
         return 1;
     }
 
     @Nullable
-    public static PlotPermissionSet getOrCreateBannedSet(CommandContext<CommandSourceStack> context, PlotStorage plot) {
+    public static PlotAccessRuleSet getOrCreateBannedSet(CommandContext<CommandSourceStack> context, PlotStorage plot) {
         String setName = "banned";
-        PlotPermissionSet set = plot.getPermissions().getPermissionSet(setName);
+        PlotAccessRuleSet set = plot.getPermissions().getPermissionSet(setName);
+        Player player = CommandUtil.requirePlayer(context);
         if (set == null) {
             // Create the set
-            plot.getPermissions().addPermissionSet(setName);
+            plot.getPermissions().addPermissionSet(player.getStringUUID(), setName);
             set = plot.getPermissions().getPermissionSet(setName);
 
             if (set == null) {
@@ -50,15 +53,15 @@ public class PlotBanCommand {
                 return null;
             }
 
-            set.setPlayerBlacklist(false);
-            set.setPermission(PlotActionType.BUILD, PlotPermission.DENY);
-            set.setPermission(PlotActionType.ACCESS, PlotPermission.DENY);
-            set.setPermission(PlotActionType.INTERACT, PlotPermission.DENY);
-            set.setPermission(PlotActionType.SET_HOME, PlotPermission.DENY);
-            set.setPermission(PlotActionType.ENTER, PlotPermission.DENY);
-            set.setPermission(PlotActionType.PVE, PlotPermission.DENY);
-            set.setPermission(PlotActionType.PVP, PlotPermission.DENY);
-            set.setActive(true);
+            set.setPlayerBlacklist("SERVER", false);
+            set.setPermission("SERVER", PlotActionType.BUILD, PlotPermissionResult.DENY);
+            set.setPermission("SERVER", PlotActionType.ACCESS, PlotPermissionResult.DENY);
+            set.setPermission("SERVER", PlotActionType.INTERACT, PlotPermissionResult.DENY);
+            set.setPermission("SERVER", PlotActionType.SET_HOME, PlotPermissionResult.DENY);
+            set.setPermission("SERVER", PlotActionType.ENTER, PlotPermissionResult.DENY);
+            set.setPermission("SERVER", PlotActionType.PVE, PlotPermissionResult.DENY);
+            set.setPermission("SERVER", PlotActionType.PVP, PlotPermissionResult.DENY);
+            set.setActive("SERVER", true);
             CommandUtil.translatableSuccess(context, "commands.wideplots.response.permissions.created_set", setName);
         }
         return set;

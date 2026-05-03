@@ -5,12 +5,13 @@ import com.mojang.brigadier.context.CommandContext;
 import games.fatboychummy.wideplots.WidePlots;
 import games.fatboychummy.wideplots.command.PermissionLevel;
 import games.fatboychummy.wideplots.util.CommandUtil;
-import games.fatboychummy.wideplots.world.plot.permissions.PlotPermissionSet;
+import games.fatboychummy.wideplots.world.plot.permissions.PlotAccessRuleSet;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorage;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorageHandler;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.GameProfileArgument;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
 
 import java.util.Collection;
 
@@ -19,7 +20,8 @@ public class PlotPermissionsUpdateSetAddPlayerCommand {
         if (CommandUtil.shouldBlock(context, PermissionLevel.ALL)) {return 0;}
         if (CommandUtil.blockNonOwner(context)) {return 0;}
 
-        PlotStorage plot = PlotStorageHandler.getPlot(CommandUtil.requirePlayer(context));
+        Player player = CommandUtil.requirePlayer(context);
+        PlotStorage plot = PlotStorageHandler.getPlot(player);
         Collection<GameProfile> playersToAdd;
         try {
             playersToAdd = GameProfileArgument.getGameProfiles(context, "player");
@@ -29,7 +31,7 @@ public class PlotPermissionsUpdateSetAddPlayerCommand {
             return 0;
         }
         String setName = context.getArgument("name", String.class);
-        PlotPermissionSet set = plot.getPermissions().getPermissionSet(setName);
+        PlotAccessRuleSet set = plot.getPermissions().getPermissionSet(setName);
 
         if (playersToAdd.size() > 1) {
             CommandUtil.translatableFailure(context, "commands.wideplots.response.permissions.only_one_x", "player");
@@ -55,7 +57,7 @@ public class PlotPermissionsUpdateSetAddPlayerCommand {
             return 0;
         }
 
-        set.addPlayer(playerToAdd.getId().toString());
+        set.addPlayer(player.getStringUUID(), playerToAdd.getId().toString());
         CommandUtil.translatableSuccess(context,
                 "commands.wideplots.response.permissions.added_x_to_set",
                 playerToAdd.getName() == null ? Component.translatable("commands.wideplots.response.generic.unkown_player") : playerToAdd.getName(),

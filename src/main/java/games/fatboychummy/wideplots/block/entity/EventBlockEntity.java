@@ -6,12 +6,12 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Consumer;
 
 public class EventBlockEntity extends BlockEntity {
-    private final List<Consumer<WPEvent>> listeners = new ArrayList<>();
+    private final Set<Consumer<WPEvent>> listeners = new HashSet<>();
 
     public EventBlockEntity(BlockEntityType<?> blockEntityType, BlockPos blockPos, BlockState blockState) {
         super(blockEntityType, blockPos, blockState);

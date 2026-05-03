@@ -18,6 +18,10 @@ public class WPEvent {
         return null;
     }
 
+    public @Nullable Object[] getArgs() {
+        return this.args;
+    }
+
     public @NotNull String getEventName() {
         return eventName;
     }

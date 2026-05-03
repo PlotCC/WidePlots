@@ -5,12 +5,13 @@ import com.mojang.brigadier.context.CommandContext;
 import games.fatboychummy.wideplots.WidePlots;
 import games.fatboychummy.wideplots.command.PermissionLevel;
 import games.fatboychummy.wideplots.util.CommandUtil;
-import games.fatboychummy.wideplots.world.plot.permissions.PlotPermissionSet;
+import games.fatboychummy.wideplots.world.plot.permissions.PlotAccessRuleSet;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorage;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorageHandler;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.GameProfileArgument;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
 
 import java.util.Collection;
 
@@ -19,8 +20,8 @@ public class PlotPermissionsUpdateSetRemovePlayerCommand {
         if (CommandUtil.shouldBlock(context, PermissionLevel.ALL)) {return 0;}
         if (CommandUtil.blockNonOwner(context)) {return 0;}
 
-        WidePlots.LOGGER.info("Executing command to add player to permission set...");
-        PlotStorage plot = PlotStorageHandler.getPlot(CommandUtil.requirePlayer(context));
+        Player player = CommandUtil.requirePlayer(context);
+        PlotStorage plot = PlotStorageHandler.getPlot(player);
         Collection<GameProfile> playersToRemove;
         try {
             playersToRemove = GameProfileArgument.getGameProfiles(context, "player");
@@ -30,7 +31,7 @@ public class PlotPermissionsUpdateSetRemovePlayerCommand {
             return 0;
         }
         String setName = context.getArgument("name", String.class);
-        PlotPermissionSet set = plot.getPermissions().getPermissionSet(setName);
+        PlotAccessRuleSet set = plot.getPermissions().getPermissionSet(setName);
 
         if (playersToRemove.size() > 1) {
             CommandUtil.translatableFailure(context,
@@ -52,7 +53,7 @@ public class PlotPermissionsUpdateSetRemovePlayerCommand {
         }
 
         if (set.hasPlayer(playerToRemove.getId().toString())) {
-            set.removePlayer(playerToRemove.getId().toString());
+            set.removePlayer(player.getStringUUID(), playerToRemove.getId().toString());
             CommandUtil.translatableSuccess(context,
                     "commands.wideplots.response.permissions.removed_x_from_set",
                     Component.translatable("commands.wideplots.response.generic.player"),

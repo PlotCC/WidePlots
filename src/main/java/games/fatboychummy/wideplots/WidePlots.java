@@ -14,7 +14,7 @@ import games.fatboychummy.wideplots.world.player.PlotPlayerYeeter;
 import games.fatboychummy.wideplots.world.player.WPPlayerHandler;
 import games.fatboychummy.wideplots.world.plot.permissions.BounderHandler;
 import games.fatboychummy.wideplots.world.plot.permissions.PlotPermissionHandler;
-import games.fatboychummy.wideplots.world.plot.permissions.PlotPermissions;
+import games.fatboychummy.wideplots.world.plot.permissions.PlotAccessManager;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorageHandler;
 import games.fatboychummy.wideplots.world.structures.PlotStructures;
 import net.fabricmc.api.ModInitializer;
@@ -50,7 +50,7 @@ public class WidePlots implements ModInitializer {
         PlotCommands.init();
 
         // Permission and plot storage initialization.
-        PlotPermissions.init();
+        PlotAccessManager.init();
         PlotPermissionHandler.init();
         PlotStorageHandler.init();
         PlotChunkGenerator.init();

@@ -5,7 +5,7 @@ import com.mojang.brigadier.context.CommandContext;
 import games.fatboychummy.wideplots.command.PermissionLevel;
 import games.fatboychummy.wideplots.world.PlotDimension;
 import games.fatboychummy.wideplots.world.plot.permissions.PlotActionType;
-import games.fatboychummy.wideplots.world.plot.permissions.PlotPermission;
+import games.fatboychummy.wideplots.world.plot.permissions.PlotPermissionResult;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorage;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorageHandler;
 import net.minecraft.commands.CommandSourceStack;
@@ -87,6 +87,10 @@ public class CommandUtil {
         return true;
     }
 
+    public static boolean isServer(CommandContext<CommandSourceStack> context) {
+        return !context.getSource().getLevel().isClientSide();
+    }
+
     /**
      * The base checks for all plot commands: is the caller a player, are they in the plot dimension, and do they have the required permission level?
      * If any of these checks fail, an appropriate error message is sent to the command source and true is returned.
@@ -98,6 +102,7 @@ public class CommandUtil {
     public static boolean shouldBlock(CommandContext<CommandSourceStack> context, PermissionLevel permissionLevel) {
         if (!checkPermission(context, permissionLevel)) {return true;}
         if (!isPlayer(context)) {return true;}
+        if (!isServer(context)) {return true;}
         //if (!inPlotDimension(context)) {return true;}
         //return false;
         return !inPlotDimension(context);
@@ -196,7 +201,7 @@ public class CommandUtil {
         ServerPlayer player = context.getSource().getPlayer();
         assert player != null;
 
-        if (plot.getPermissions().getActionResult(player.getStringUUID(), action, null, null) == PlotPermission.GRANT) {
+        if (plot.getPermissions().getActionResult(player.getStringUUID(), action, null, null) == PlotPermissionResult.GRANT) {
             return false;
         }
         translatableFailure(context, "commands.wideplots.response.generic.no_permission_plot");

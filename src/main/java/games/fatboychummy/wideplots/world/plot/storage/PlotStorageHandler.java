@@ -3,6 +3,7 @@ package games.fatboychummy.wideplots.world.plot.storage;
 import com.mojang.authlib.GameProfile;
 import games.fatboychummy.wideplots.util.PlotUtility;
 import games.fatboychummy.wideplots.world.plot.permissions.PlotPermissionHandler;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -112,6 +113,10 @@ public class PlotStorageHandler {
      */
     public static PlotStorage getPlot(int x, int z) {
         return activePlots.get(PlotUtility.keyFromCoords(x, z));
+    }
+
+    public static PlotStorage getPlot(BlockPos pos) {
+        return activePlots.get(PlotUtility.keyFromCoords(pos.getX(), pos.getZ()));
     }
 
     /**

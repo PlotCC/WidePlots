@@ -8,18 +8,20 @@ import games.fatboychummy.wideplots.world.plot.storage.PlotStorage;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorageHandler;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
 
 public class PlotSettingsSetGamemodeCommand {
     public static int execute(CommandContext<CommandSourceStack> context) {
         if (CommandUtil.shouldBlock(context, PermissionLevel.ALL)) {return 0;}
 
-        PlotStorage plot = PlotStorageHandler.getPlot(CommandUtil.requirePlayer(context));
+        Player player = CommandUtil.requirePlayer(context);
+        PlotStorage plot = PlotStorageHandler.getPlot(player);
 
         if (CommandUtil.blockedByPermissions(context, plot, PlotActionType.SETTINGS)) {return 0;}
 
         GameType gameMode = context.getArgument("gamemode", GameType.class);
-        plot.setVisitorGameMode(gameMode);
+        plot.setVisitorGameMode(player.getStringUUID(), gameMode);
         CommandUtil.translatableSuccess(
                 context,
                 "commands.wideplots.response.settings.set.generic_x",

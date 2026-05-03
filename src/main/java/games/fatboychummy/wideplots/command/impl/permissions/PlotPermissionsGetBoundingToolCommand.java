@@ -5,7 +5,7 @@ import games.fatboychummy.wideplots.WidePlots;
 import games.fatboychummy.wideplots.command.PermissionLevel;
 import games.fatboychummy.wideplots.item.ModItems;
 import games.fatboychummy.wideplots.util.CommandUtil;
-import games.fatboychummy.wideplots.world.plot.permissions.PlotPermissionSet;
+import games.fatboychummy.wideplots.world.plot.permissions.PlotAccessRuleSet;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorage;
 import games.fatboychummy.wideplots.world.plot.storage.PlotStorageHandler;
 import net.minecraft.ChatFormatting;
@@ -25,7 +25,7 @@ public class PlotPermissionsGetBoundingToolCommand {
         ServerPlayer player = CommandUtil.requirePlayer(context);
         PlotStorage plot = PlotStorageHandler.getPlot(player);
         String setName = context.getArgument("name", String.class);
-        PlotPermissionSet set = plot.getPermissions().getPermissionSet(setName);
+        PlotAccessRuleSet set = plot.getPermissions().getPermissionSet(setName);
 
         if (set == null) {
             CommandUtil.translatableFailure(context, "commands.wideplots.response.permissions.no_set_exists");

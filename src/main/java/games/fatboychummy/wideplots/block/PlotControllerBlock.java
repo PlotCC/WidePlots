@@ -5,7 +5,11 @@ import games.fatboychummy.wideplots.block.entity.PlotControllerBlockEntity;
 import games.fatboychummy.wideplots.util.PlotUtility;
 import games.fatboychummy.wideplots.world.player.PlotPlayerStorage;
 import games.fatboychummy.wideplots.world.player.WPPlayerHandler;
+import games.fatboychummy.wideplots.world.plot.permissions.PlotPermissionHandler;
+import games.fatboychummy.wideplots.world.plot.permissions.PlotAccessManager;
 import games.fatboychummy.wideplots.world.plot.storage.PlotPCHandler;
+import games.fatboychummy.wideplots.world.plot.storage.PlotStorage;
+import games.fatboychummy.wideplots.world.plot.storage.PlotStorageHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -91,14 +95,30 @@ public class PlotControllerBlock extends BaseEntityBlock {
         }
 
         BlockEntity be = level.getBlockEntity(blockPos);
+        long key = PlotUtility.keyFromCoords(blockPos.getX(), blockPos.getZ());
         if (be instanceof PlotControllerBlockEntity PCBlockEntity) {
-            if (!PlotPCHandler.setPlotController(PlotUtility.keyFromCoords(blockPos.getX(), blockPos.getZ()), PCBlockEntity)) {
+            if (!PlotPCHandler.setPlotController(key, PCBlockEntity)) {
                 // Plot controller already exists, despite our earlier `hasPlotController` check.
                 WidePlots.LOGGER.warn("Plot Controller existed in check 2, but not check 1.");
                 skipNotify = true;
                 level.removeBlock(blockPos, false);
                 return;
             }
+            PlotStorage storage = PlotStorageHandler.getPlot(blockPos.getX(), blockPos.getZ());
+            PlotAccessManager perms = PlotPermissionHandler.get(key);
+            if (storage == null) {
+                WidePlots.LOGGER.error("Plot Controller placed but no PlotStorage exists.");
+                level.removeBlock(blockPos, false);
+                return;
+            }
+            if (perms == null) {
+                WidePlots.LOGGER.error("Plot Controller placed but no PlotPermissions exists.");
+                level.removeBlock(blockPos, false);
+                return;
+            }
+            storage.registerController(PCBlockEntity);
+            perms.registerController(PCBlockEntity);
+
             playerUUID = livingEntity.getStringUUID();
             PCBlockEntity.setOwner(livingEntity.getUUID());
             PCBlockEntity.setChanged();
@@ -119,7 +139,23 @@ public class PlotControllerBlock extends BaseEntityBlock {
             return;
         }
         if (!skipNotify) {
-            PlotPCHandler.removePlotController(PlotUtility.keyFromCoords(blockPos.getX(), blockPos.getZ()));
+            long key = PlotUtility.keyFromCoords(blockPos.getX(), blockPos.getY());
+            PlotStorage storage = PlotStorageHandler.getPlot(blockPos.getX(), blockPos.getZ());
+            PlotAccessManager perms = PlotPermissionHandler.get(key);
+
+            PlotPCHandler.removePlotController(key);
+
+            if (storage == null) {
+                WidePlots.LOGGER.warn("Plot Controller removed but no PlotStorage exists.");
+                return;
+            }
+            if (perms == null) {
+                WidePlots.LOGGER.warn("Plot Controller removed but no PlotPermissions exists.");
+                return;
+            }
+
+            storage.removeController();
+            perms.removeController();
         }
         super.onRemove(blockState, level, blockPos, blockState2, bl);
     }
